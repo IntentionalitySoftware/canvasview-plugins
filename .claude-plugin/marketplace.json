@@ -1,0 +1,11 @@
+{
+  "name": "canvasview",
+  "owner": { "name": "Intentionality Software" },
+  "plugins": [
+    {
+      "name": "canvasview",
+      "source": "./canvasview",
+      "description": "Create shared decision canvases and retrieve human answers."
+    }
+  ]
+}

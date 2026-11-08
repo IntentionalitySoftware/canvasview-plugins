@@ -1,0 +1,7 @@
+{
+  "name": "canvasview",
+  "version": "0.1.0",
+  "description": "Create shared decision canvases and retrieve human answers with CanvasView.",
+  "author": { "name": "Intentionality Software" },
+  "homepage": "https://docs.canvasview.dev/"
+}

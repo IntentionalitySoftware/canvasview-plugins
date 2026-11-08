@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "canvasview": {
+      "type": "http",
+      "url": "https://app.canvasview.dev/mcp",
+      "oauth": { "scopes": "offline_access" }
+    }
+  }
+}
