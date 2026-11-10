@@ -1,0 +1,63 @@
+{
+  "description": "A team works through a shared checklist live, then the lead records go or no-go.",
+  "input": {
+    "idempotencyKey": "example-checklist-review-replace-me",
+    "title": "Launch readiness: billing v2",
+    "question": "Is billing v2 ready to launch on Thursday?",
+    "nodes": [
+      {
+        "id": "plan",
+        "kind": "widget",
+        "widget": "timeline@1",
+        "data": {
+          "events": [
+            { "at": "2026-11-10", "label": "Code freeze", "status": "success" },
+            { "at": "2026-11-11", "label": "Load test", "detail": "Target 500 requests per second", "status": "warning" },
+            { "at": "2026-11-12", "label": "Launch", "detail": "Thursday 10:00 UTC" }
+          ]
+        }
+      },
+      {
+        "id": "checks",
+        "kind": "widget",
+        "widget": "checklist@1",
+        "data": {
+          "items": [
+            { "label": "Load test passed", "owner": "Sam" },
+            { "label": "Rollback tested", "owner": "Priya" },
+            { "label": "Support briefed", "owner": "Lee", "note": "Share the new invoice screenshots" },
+            "Status page message drafted"
+          ],
+          "stateKey": "launch-checks",
+          "field": "checked"
+        }
+      },
+      {
+        "id": "go",
+        "kind": "widget",
+        "widget": "decision@1",
+        "data": {
+          "options": [
+            { "value": "go", "label": "Go" },
+            { "value": "no-go", "label": "No-go" }
+          ],
+          "requireReason": true,
+          "field": "launch"
+        }
+      }
+    ],
+    "edges": [
+      { "from": "plan", "to": "checks" },
+      { "from": "checks", "to": "go" }
+    ],
+    "answerSchema": {
+      "type": "object",
+      "properties": {
+        "launch": { "type": "string", "title": "Launch", "enum": ["go", "no-go"] },
+        "launchReason": { "type": "string", "title": "Reason" },
+        "checked": { "type": "array", "title": "Checks done", "items": { "type": "integer" } }
+      },
+      "required": ["launch"]
+    }
+  }
+}

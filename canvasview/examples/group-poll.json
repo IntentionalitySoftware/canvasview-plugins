@@ -1,0 +1,53 @@
+{
+  "description": "A team votes live on one question, one vote each; the organiser closes voting and submits the result.",
+  "input": {
+    "idempotencyKey": "example-group-poll-replace-me",
+    "title": "Team offsite location",
+    "question": "Where should the team offsite be?",
+    "nodes": [
+      {
+        "id": "context",
+        "kind": "widget",
+        "widget": "note@1",
+        "data": { "markdown": "Vote by **Friday 17:00**. You can change your vote until voting closes. The organiser then submits the result." }
+      },
+      {
+        "id": "options",
+        "kind": "widget",
+        "widget": "comparison@1",
+        "data": {
+          "options": [
+            { "name": "Lisbon", "values": { "Cost per person": "$1,150", "Travel time": "3 hours" } },
+            { "name": "Edinburgh", "values": { "Cost per person": "$980", "Travel time": "1 hour" } },
+            { "name": "Remote", "values": { "Cost per person": "$150", "Travel time": "None" } }
+          ],
+          "criteria": ["Cost per person", "Travel time"]
+        }
+      },
+      {
+        "id": "vote",
+        "kind": "widget",
+        "widget": "poll@1",
+        "data": {
+          "question": "Where should we go?",
+          "options": ["Lisbon", "Edinburgh", "Remote"],
+          "stateKey": "offsite-vote",
+          "closedKey": "offsite-vote-closed",
+          "hideUntilClosed": true,
+          "field": "result"
+        }
+      }
+    ],
+    "edges": [
+      { "from": "context", "to": "options" },
+      { "from": "options", "to": "vote" }
+    ],
+    "answerSchema": {
+      "type": "object",
+      "properties": {
+        "result": { "type": "object", "title": "Poll result" }
+      },
+      "required": ["result"]
+    }
+  }
+}

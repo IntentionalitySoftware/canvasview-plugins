@@ -1,0 +1,67 @@
+{
+  "description": "One choice between vendors, with the evidence beside it and a required reason.",
+  "input": {
+    "idempotencyKey": "example-decision-with-evidence-replace-me",
+    "title": "Vendor renewal: Acme or Globex",
+    "question": "Should we renew with Acme or switch to Globex?",
+    "nodes": [
+      {
+        "id": "context",
+        "kind": "widget",
+        "widget": "note@1",
+        "data": { "markdown": "Our Acme contract ends on **1 December**. Globex is cheaper but needs a two-week migration.\n\nPick one and say why." }
+      },
+      {
+        "id": "costs",
+        "kind": "widget",
+        "widget": "metric@1",
+        "data": {
+          "tiles": [
+            { "label": "Acme per month", "value": 1200, "unit": "USD", "baseline": 1100 },
+            { "label": "Globex per month", "value": 980, "unit": "USD" }
+          ]
+        }
+      },
+      {
+        "id": "compare",
+        "kind": "widget",
+        "widget": "comparison@1",
+        "data": {
+          "options": [
+            { "name": "Acme", "values": { "Price": "$1,200", "Support": "24/7", "Migration": "None" } },
+            { "name": "Globex", "values": { "Price": "$980", "Support": "Business hours", "Migration": "Two weeks" } }
+          ],
+          "criteria": ["Price", "Support", "Migration"],
+          "recommended": "Acme"
+        }
+      },
+      {
+        "id": "choice",
+        "kind": "widget",
+        "widget": "decision@1",
+        "data": {
+          "options": [
+            { "value": "renew", "label": "Renew with Acme", "description": "Keeps current terms and support" },
+            { "value": "switch", "label": "Switch to Globex", "description": "Saves about $2,600 a year" }
+          ],
+          "layout": "cards",
+          "requireReason": true,
+          "field": "choice"
+        }
+      }
+    ],
+    "edges": [
+      { "from": "context", "to": "compare" },
+      { "from": "costs", "to": "compare" },
+      { "from": "compare", "to": "choice" }
+    ],
+    "answerSchema": {
+      "type": "object",
+      "properties": {
+        "choice": { "type": "string", "title": "Vendor", "enum": ["renew", "switch"] },
+        "choiceReason": { "type": "string", "title": "Reason" }
+      },
+      "required": ["choice", "choiceReason"]
+    }
+  }
+}

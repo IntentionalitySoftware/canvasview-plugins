@@ -1,0 +1,155 @@
+{
+  "description": "An app of three components sharing state under a contract: loan inputs, a calculation that writes the results, and a balance chart. The canvas refuses writes outside each role.",
+  "input": {
+    "idempotencyKey": "example-contract-app-replace-me",
+    "title": "Loan model",
+    "nodes": [
+      {
+        "id": "inputs",
+        "kind": "component",
+        "size": {
+          "width": 320,
+          "height": 320
+        },
+        "data": {
+          "start": {
+            "principal": 300000,
+            "rate": 5.5,
+            "years": 25
+          }
+        },
+        "source": "import { useEffect } from \"react\";\nimport { Note, useGroupMode, useSharedState } from \"@canvasview/kit\";\n\ntype Inputs = { principal: number; rate: number; years: number };\ntype Data = { start: Inputs };\n\n// Writes model.inputs, the only key its role lists in writes. data.start only seeds the shared value: once\n// it is set, every component reads the same numbers, and an agent changes them with set_canvas_state.\nexport default function LoanInputs({ data }: { data: Data }) {\n  useGroupMode();\n  const [stored, setInputs, { error }] = useSharedState<Inputs | null>(\"model.inputs\", null);\n  const inputs = stored ?? data.start;\n  useEffect(() => {\n    if (stored === null) setInputs(data.start);\n  }, [stored === null]);\n  const field = (name: keyof Inputs, label: string, step: number) => (\n    <label style={{ display: \"grid\", gap: 4 }}>\n      {label}\n      <input\n        type=\"number\"\n        step={step}\n        value={inputs[name]}\n        onChange={(event) => {\n          const value = Number(event.target.value) || 0;\n          setInputs({ ...inputs, [name]: name === \"years\" ? Math.max(1, Math.min(40, Math.round(value))) : value });\n        }}\n      />\n    </label>\n  );\n  return (\n    <div style={{ display: \"grid\", gap: 8, padding: 12 }}>\n      <Note markdown=\"Change the loan. The calculation and the chart follow.\" />\n      {field(\"principal\", \"Loan amount\", 1000)}\n      {field(\"rate\", \"Annual rate (%)\", 0.1)}\n      {field(\"years\", \"Years\", 1)}\n      {error ? <p role=\"alert\">Not saved: {error}</p> : null}\n    </div>\n  );\n}\n"
+      },
+      {
+        "id": "calculation",
+        "kind": "component",
+        "size": {
+          "width": 480,
+          "height": 200
+        },
+        "data": {},
+        "source": "import { useEffect } from \"react\";\nimport { Metric, Note, useGroupMode, useSharedState } from \"@canvasview/kit\";\n\ntype Inputs = { principal: number; rate: number; years: number };\ntype Results = { monthly: number; totalPaid: number; totalInterest: number };\n\nconst round = (value: number) => Math.round(value * 100) / 100;\n\nfunction compute({ principal, rate, years }: Inputs) {\n  const months = Math.max(1, Math.min(480, Math.round(years) * 12));\n  const monthlyRate = rate / 100 / 12;\n  const monthly = monthlyRate === 0 ? principal / months : (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));\n  const balances: number[] = [];\n  let balance = principal;\n  for (let month = 1; month <= months; month++) {\n    balance = balance * (1 + monthlyRate) - monthly;\n    if (month % 12 === 0) balances.push(Math.max(0, Math.round(balance)));\n  }\n  const results: Results = { monthly: round(monthly), totalPaid: round(monthly * months), totalInterest: round(monthly * months - principal) };\n  return { results, balances };\n}\n\n// Reads model.inputs and writes model.results and model.balances. Every viewer computes the same numbers,\n// so it runs in group mode: no one-person lock, and its writes need no control.\nexport default function LoanCalculation() {\n  useGroupMode();\n  // No defaults of its own: it computes from the shared inputs only, so it can never disagree with them.\n  const [inputs] = useSharedState<Inputs | null>(\"model.inputs\", null);\n  const [results, setResults, { error }] = useSharedState<Results | null>(\"model.results\", null);\n  const [, setBalances] = useSharedState<number[]>(\"model.balances\", []);\n  const next = inputs ? compute(inputs) : null;\n  const key = next ? JSON.stringify(next.results) : \"\";\n  useEffect(() => {\n    if (!next || JSON.stringify(results) === key) return;\n    setResults(next.results);\n    setBalances(next.balances);\n  }, [key]);\n  if (!next) return <Note markdown=\"The numbers appear here once the inputs load.\" />;\n  return (\n    <div style={{ display: \"grid\", gap: 8, padding: 12 }}>\n      <Metric tiles={[\n        { label: \"Monthly payment\", value: next.results.monthly },\n        { label: \"Total interest\", value: next.results.totalInterest },\n        { label: \"Total paid\", value: next.results.totalPaid },\n      ]} />\n      {error ? <p role=\"alert\">Not saved: {error}</p> : null}\n    </div>\n  );\n}\n"
+      },
+      {
+        "id": "chart",
+        "kind": "component",
+        "size": {
+          "width": 560,
+          "height": 320
+        },
+        "data": {},
+        "source": "import { Chart, Note, useSharedState } from \"@canvasview/kit\";\n\n// Reads model.balances only, and writes nothing.\nexport default function BalanceChart() {\n  const [balances] = useSharedState<number[]>(\"model.balances\", []);\n  if (!balances.length) return <Note markdown=\"The balance appears here once the calculation runs.\" />;\n  return <Chart type=\"line\" rows={balances.map((value, index) => ({ label: \"Year \" + (index + 1), value }))} xLabel=\"Year\" yLabel=\"Balance left\" />;\n}\n"
+      }
+    ],
+    "edges": [
+      {
+        "from": "inputs",
+        "to": "calculation",
+        "label": "model.inputs"
+      },
+      {
+        "from": "calculation",
+        "to": "chart",
+        "label": "model.balances"
+      }
+    ],
+    "contract": {
+      "state": {
+        "model.inputs": {
+          "description": "The loan people are modelling.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "principal": {
+                "type": "number"
+              },
+              "rate": {
+                "type": "number"
+              },
+              "years": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "principal",
+              "rate",
+              "years"
+            ]
+          },
+          "writers": [
+            "inputs"
+          ]
+        },
+        "model.results": {
+          "description": "Monthly payment and totals for model.inputs.",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "monthly": {
+                "type": "number"
+              },
+              "totalPaid": {
+                "type": "number"
+              },
+              "totalInterest": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "monthly",
+              "totalPaid",
+              "totalInterest"
+            ]
+          },
+          "writers": [
+            "calculation"
+          ]
+        },
+        "model.balances": {
+          "description": "The balance left at the end of each year.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "writers": [
+            "calculation"
+          ]
+        }
+      },
+      "roles": {
+        "inputs": {
+          "purpose": "Loan inputs people edit: amount, annual rate and years.",
+          "reads": [],
+          "writes": [
+            "model.inputs"
+          ]
+        },
+        "calculation": {
+          "purpose": "Loan calculation: monthly payment, totals and the yearly balance.",
+          "reads": [
+            "model.inputs"
+          ],
+          "writes": [
+            "model.results",
+            "model.balances"
+          ]
+        },
+        "chart": {
+          "purpose": "Line chart of the balance left each year.",
+          "reads": [
+            "model.balances"
+          ],
+          "writes": []
+        }
+      },
+      "events": [
+        {
+          "name": "state.changed",
+          "when": "Someone changes the loan. Read model.inputs and model.results with get_canvas_state."
+        }
+      ]
+    }
+  }
+}

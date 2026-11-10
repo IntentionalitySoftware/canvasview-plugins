@@ -1,0 +1,51 @@
+{
+  "description": "A shared calculator to explore the numbers, then a decision on the plan.",
+  "input": {
+    "idempotencyKey": "example-calculator-decision-replace-me",
+    "title": "Choose a support plan",
+    "question": "Which support plan should we buy for next year?",
+    "nodes": [
+      {
+        "id": "costs",
+        "kind": "widget",
+        "widget": "calculator@1",
+        "data": {
+          "inputs": [
+            { "name": "seats", "label": "Agents", "value": 12, "min": 1, "max": 500, "step": 1 },
+            { "name": "standard", "label": "Standard price per agent", "value": 19, "min": 0, "unit": "USD" },
+            { "name": "premium", "label": "Premium price per agent", "value": 49, "min": 0, "unit": "USD" }
+          ],
+          "outputs": [
+            { "label": "Standard per year", "formula": "seats * standard * 12", "unit": "USD", "decimals": 0 },
+            { "label": "Premium per year", "formula": "seats * premium * 12", "unit": "USD", "decimals": 0 },
+            { "label": "Difference per year", "formula": "seats * (premium - standard) * 12", "unit": "USD", "decimals": 0 }
+          ],
+          "stateKey": "support-costs",
+          "field": "costs"
+        }
+      },
+      {
+        "id": "plan",
+        "kind": "widget",
+        "widget": "decision@1",
+        "data": {
+          "options": [
+            { "value": "standard", "label": "Standard", "description": "Email support, next business day" },
+            { "value": "premium", "label": "Premium", "description": "Phone support, one-hour response" }
+          ],
+          "layout": "cards",
+          "field": "plan"
+        }
+      }
+    ],
+    "edges": [{ "from": "costs", "to": "plan" }],
+    "answerSchema": {
+      "type": "object",
+      "properties": {
+        "plan": { "type": "string", "title": "Plan", "enum": ["standard", "premium"] },
+        "costs": { "type": "object", "title": "Numbers used" }
+      },
+      "required": ["plan"]
+    }
+  }
+}

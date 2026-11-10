@@ -1,0 +1,38 @@
+{
+  "description": "An approval of a document, with the clauses that need attention highlighted. Only invited people can open it.",
+  "input": {
+    "idempotencyKey": "example-approval-replace-me",
+    "title": "Approve the Acme data processing addendum",
+    "question": "Can we sign the Acme data processing addendum as written?",
+    "access": { "mode": "invited", "invited": ["legal@example.com"] },
+    "nodes": [
+      {
+        "id": "addendum",
+        "kind": "widget",
+        "widget": "document@1",
+        "size": { "width": 560, "height": 360 },
+        "data": {
+          "text": "# Data processing addendum\n\nAcme may use subprocessors in the EU and US.\n\nCustomer data is deleted **within 90 days** of termination.\n\nAcme notifies the customer of a breach within 72 hours.",
+          "highlights": [
+            { "start": 101, "end": 115, "note": "Our policy asks for 30 days." },
+            { "start": 174, "end": 189, "note": "Matches our standard." }
+          ]
+        }
+      },
+      {
+        "id": "sign-off",
+        "kind": "widget",
+        "widget": "approval@1",
+        "data": { "statement": "Approve signing the Acme data processing addendum as written.", "field": "approval" }
+      }
+    ],
+    "edges": [{ "from": "addendum", "to": "sign-off" }],
+    "answerSchema": {
+      "type": "object",
+      "properties": {
+        "approval": { "type": "object", "title": "Approval" }
+      },
+      "required": ["approval"]
+    }
+  }
+}

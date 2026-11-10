@@ -1,0 +1,83 @@
+{
+  "description": "A data review: headline numbers, a table and a chart, with a short form for the verdict.",
+  "input": {
+    "idempotencyKey": "example-data-review-replace-me",
+    "title": "Q3 cloud spend review",
+    "question": "Is the Q3 cloud spend report ready to send to finance?",
+    "nodes": [
+      {
+        "id": "totals",
+        "kind": "widget",
+        "widget": "metric@1",
+        "data": {
+          "tiles": [
+            { "label": "Q3 total", "value": 48200, "unit": "USD", "baseline": 41500 },
+            { "label": "Services over budget", "value": 2, "baseline": 0 }
+          ]
+        }
+      },
+      {
+        "id": "spend",
+        "kind": "widget",
+        "widget": "table@1",
+        "size": { "width": 640, "height": 320 },
+        "data": {
+          "rows": [
+            { "Service": "Compute", "July": 9100, "August": 9800, "September": 10400, "Status": "Over budget" },
+            { "Service": "Storage", "July": 3200, "August": 3300, "September": 3350, "Status": "On budget" },
+            { "Service": "Database", "July": 2400, "August": 2900, "September": 3750, "Status": "Over budget" }
+          ],
+          "columns": [
+            { "key": "Service" },
+            { "key": "July", "type": "currency", "currency": "USD" },
+            { "key": "August", "type": "currency", "currency": "USD" },
+            { "key": "September", "type": "currency", "currency": "USD" },
+            { "key": "Status", "type": "badge" }
+          ],
+          "highlightWhere": { "key": "Status", "equals": "Over budget" }
+        }
+      },
+      {
+        "id": "trend",
+        "kind": "widget",
+        "widget": "chart@1",
+        "size": { "width": 640, "height": 320 },
+        "data": {
+          "type": "line",
+          "labels": ["July", "August", "September"],
+          "series": [
+            { "name": "Compute", "values": [9100, 9800, 10400] },
+            { "name": "Storage", "values": [3200, 3300, 3350] },
+            { "name": "Database", "values": [2400, 2900, 3750] }
+          ],
+          "xLabel": "Month",
+          "yLabel": "Spend (USD)"
+        }
+      },
+      {
+        "id": "verdict",
+        "kind": "widget",
+        "widget": "form@1",
+        "data": {
+          "schema": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": { "type": "string", "title": "Report status", "enum": ["Ready to send", "Needs changes"] },
+              "notes": { "type": "string", "title": "What should change?", "maxLength": 1000 }
+            }
+          },
+          "spread": true
+        }
+      }
+    ],
+    "answerSchema": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "title": "Report status", "enum": ["Ready to send", "Needs changes"] },
+        "notes": { "type": "string", "title": "Notes" }
+      },
+      "required": ["status"]
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "description": "A launch workspace with no answer: a shared board people keep working on and a status table the agent refreshes with patch_canvas.",
+  "input": {
+    "idempotencyKey": "example-workspace-replace-me",
+    "title": "Spring launch workspace",
+    "nodes": [
+      {
+        "id": "brief",
+        "kind": "widget",
+        "widget": "note@1",
+        "data": { "markdown": "Move cards as work progresses. The status table refreshes each morning." }
+      },
+      {
+        "id": "status",
+        "kind": "widget",
+        "widget": "table@1",
+        "size": { "width": 520, "height": 260 },
+        "data": {
+          "columns": [
+            { "key": "area", "label": "Area" },
+            { "key": "owner", "label": "Owner" },
+            { "key": "state", "label": "State", "type": "badge" }
+          ],
+          "rows": [
+            { "area": "Pricing page", "owner": "Dana", "state": "In review" },
+            { "area": "Release notes", "owner": "Lee", "state": "Drafting" },
+            { "area": "Support macros", "owner": "Sam", "state": "Done" }
+          ]
+        }
+      },
+      {
+        "id": "tasks",
+        "kind": "widget",
+        "widget": "board@1",
+        "size": { "width": 640, "height": 360 },
+        "data": {
+          "columns": ["To do", "Doing", "Done"],
+          "stateKey": "launch-board",
+          "cards": [
+            { "text": "Final pricing copy", "column": "Doing", "owner": "Dana" },
+            { "text": "Record the demo video", "column": "To do" },
+            { "text": "Brief the support team", "column": "Done", "owner": "Sam" }
+          ]
+        }
+      }
+    ],
+    "edges": [{ "from": "brief", "to": "status" }, { "from": "brief", "to": "tasks" }],
+    "expiresInHours": 720
+  }
+}
