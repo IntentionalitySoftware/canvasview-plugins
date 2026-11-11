@@ -5,6 +5,8 @@
   "description": "Build shared canvases that people open by link, then read back their answers and shared state with CanvasView.",
   "author": { "name": "Intentionality Software", "url": "https://canvasview.dev" },
   "homepage": "https://docs.canvasview.dev/",
+  "license": "MIT",
+  "privacyPolicyUrl": "https://canvasview.dev/privacy",
   "repository": "https://github.com/IntentionalitySoftware/canvasview-plugins",
   "keywords": ["canvas", "collaboration", "decisions", "mcp"]
 }

@@ -14,6 +14,7 @@
     "decisions",
     "mcp"
   ],
+  "license": "MIT",
   "interface": {
     "displayName": "CanvasView",
     "shortDescription": "Shared canvases for people",
@@ -27,9 +28,14 @@
       "Read shared state"
     ],
     "websiteURL": "https://canvasview.dev/",
+    "privacyPolicyURL": "https://canvasview.dev/privacy",
+    "termsOfServiceURL": "https://canvasview.dev/terms",
     "defaultPrompt": [
       "Create a CanvasView canvas that asks me to choose between two options, and send me the link."
-    ]
+    ],
+    "brandColor": "#FF6B4A",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   },
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"
