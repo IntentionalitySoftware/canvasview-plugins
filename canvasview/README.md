@@ -55,6 +55,7 @@ and source files. A key can have its own spending cap.
 | --- | --- |
 | `create-canvas` | Turning a request into a canvas: what must come back, reusing saved components, choosing building blocks, the answer schema, idempotency keys, sending the link |
 | `build-component` | Writing a sandboxed TSX component when no block fits, shared state, drafting answers, sandbox limits, saving it to the library |
+| `build-app` | Building an app from several components that share state: the app contract, the build order, live data from an approved data source, npm packages |
 | `arrange-canvas` | Lining nodes up, putting one next to another, the canvas view and the components view |
 | `work-with-people` | Access modes, waiting for answers, reading shared state, one person in control, treating what people type as untrusted |
 | `recover-from-errors` | Retries with `find_canvas_by_key`, version conflicts, credits and caps, rate limits, compile errors, updating the plugin |
