@@ -13,6 +13,8 @@ Plugin version 0.6.0. A failed tool call returns `isError: true` with JSON text 
 | `agent_setup_pending` | 403 | Connect your agent, or choose to do it later, at /onboarding. The workspace opens after that. |
 | `answers_exist` | 409 | This canvas has answers, so it keeps its answer schema. Change the schema instead of removing it. |
 | `canvas_closed` | 409 | This canvas no longer accepts changes. / This canvas is read-only. Only active canvases can write to a data source. |
+| `canvas_kept` | 409 | This canvas is kept permanently and has no expiry. Unpin it first. |
+| `canvas_limit` | 409 | This account has … active canvases, the most allowed. Delete some with delete_canvas or let them expire before creating another. |
 | `canvas_not_found` | 404 | This canvas is no longer available. / Use a canvas belonging to this account. |
 | `comment_limit` | 409 | A canvas holds at most … comments. |
 | `comment_not_found` | 404 | Reply to a comment from list_comments on this canvas. |
@@ -77,6 +79,7 @@ Plugin version 0.6.0. A failed tool call returns `isError: true` with JSON text 
 | `package_too_recent` | 400 | The version was published less than 3 days ago. Use an older version; the message suggests one. |
 | `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Reduce the request size. / Keep the template spec below 1 MB. / Reduce the template's canvas below 1 MB with sample values. |
 | `payment_disputed` | 402 | A payment on this account is under dispute. Contact support@canvasview.dev. |
+| `pin_limit` | 409 | This account already keeps … canvases, the most allowed. Unpin one before keeping another. |
 | `rate_limit` | 429 | Wait one second before retrying. / Too many data requests. Wait a minute before retrying. |
 | `read_only` | 409 | This canvas is read-only. Only active canvases accept state changes. |
 | `request_in_flight` | 409 | Wait for the current paid request or retry it with its original key. |

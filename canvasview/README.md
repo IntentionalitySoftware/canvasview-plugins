@@ -61,6 +61,6 @@ and source files. A key can have its own spending cap.
 | `recover-from-errors` | Retries with `find_canvas_by_key`, version conflicts, credits and caps, rate limits, compile errors, updating the plugin |
 
 `reference/` holds the tool, kit and error references, generated from the CanvasView code
-(`tools.md`, `kit.md`, `errors.md`). `examples/` holds eight complete `create_canvas` inputs, also served by `list_examples` and `get_example`.
+(`tools.md`, `kit.md`, `errors.md`). `examples/` holds nine complete `create_canvas` inputs, also served by `list_examples` and `get_example`.
 
 Creating a canvas costs credits; validating, reading, arranging, shared state and the component library are free.
