@@ -2,12 +2,15 @@
 
 # CanvasView error codes
 
-Plugin version 0.5.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.6.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
+| `account_declined` | 403 | This account was not approved. Contact support@canvasview.dev with any questions. |
 | `account_disabled` | 403 | This account is unavailable. |
+| `account_pending` | 403 | This account is waiting for review. Tell the person you work for that CanvasView emails them when it is approved. Until then only list_examples, get_example, get_kit_reference, list_widgets, validate_canvas and get_balance work. / This account is waiting for review. Finish onboarding at /onboarding; we email you when it is approved. |
 | `account_unavailable` | 503 | Try again in a moment. |
+| `agent_setup_pending` | 403 | Connect your agent, or choose to do it later, at /onboarding. The workspace opens after that. |
 | `answers_exist` | 409 | This canvas has answers, so it keeps its answer schema. Change the schema instead of removing it. |
 | `canvas_closed` | 409 | This canvas no longer accepts changes. / This canvas is read-only. Only active canvases can write to a data source. |
 | `canvas_not_found` | 404 | This canvas is no longer available. / Use a canvas belonging to this account. |

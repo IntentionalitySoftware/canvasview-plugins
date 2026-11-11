@@ -2,7 +2,7 @@
 
 # CanvasView kit reference
 
-Plugin version 0.5.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.6.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
@@ -10,7 +10,7 @@ Use kind: component, source: TSX, and data: an object. Export a default componen
 
 Before writing a component, call search_components (GET /api/components?query=) and reuse a match with kind: component, ref: its name, and data; get_component returns source to fork. Save anything reusable with save_component (PUT /api/components/:name). Saved components are private to this account.
 
-A widget node renders the kit export named by its widget field, with data as the props.
+A widget node renders the kit export named by its widget field, with data as the props. Give it title (1 to 120 characters) to name it on the canvas, such as "Open tickets"; without one the heading is the widget type.
 
 ## Hooks
 
@@ -55,6 +55,8 @@ Nodes are placed automatically: flow (top to bottom along edges) when the canvas
 - [`Poll`](#poll) (widget `poll@1`)
 - [`RankedVote`](#rankedvote) (widget `ranked-vote@1`)
 - [`Board`](#board) (widget `board@1`)
+- [`Conversation`](#conversation) (widget `conversation@1`)
+- [`StatusList`](#statuslist) (widget `status-list@1`)
 
 ### Note
 
@@ -74,7 +76,7 @@ Example data:
 
 ### RecordDetail
 
-One record as labelled fields, each with an optional source and as-of time. Use facts for a quick map, or fields for detail.
+One record as labelled fields, each with an optional source and as-of time, under optional status badges. Use facts for a quick map, or fields for detail.
 
 Widget node: `{ "kind": "widget", "widget": "facts@1", "data": { ... } }`. Also exported as `Facts`.
 
@@ -83,11 +85,13 @@ Widget node: `{ "kind": "widget", "widget": "facts@1", "data": { ... } }`. Also 
 | `facts` | Record<string, string \| number \| boolean \| null> | no | Each key is a label and each value is shown beside it. Supply facts or fields. |
 | `fields` | { label: string; value: string \| number \| boolean \| null; source?: string; asOf?: string }[] | no | Up to 500 fields in order. An https source or value becomes a link; anything else is text. |
 | `columns` | 1 \| 2 | no | Columns of fields. Default 1. Always 1 below 360 px wide. |
+| `badges` | (string \| { label: string; tone?: "default" \| "flag" })[] | no | 1 to 8 short status badges above the fields, such as High priority. tone flag fills the badge that needs attention; flag one or two at most. |
+| `layout` | "stacked" \| "inline" | no | Default stacked: each label above its value. inline: label at the start of the row and value at the end, for short values. |
 
 Example data:
 
 ```json
-{"fields":[{"label":"Owner","value":"Platform team","source":"Vendor register"},{"label":"Budget","value":42000,"asOf":"2026-11-01"}],"columns":2}
+{"badges":[{"label":"High priority","tone":"flag"},"Reply due in 2 hours"],"fields":[{"label":"Owner","value":"Platform team","source":"Vendor register"},{"label":"Budget","value":42000,"asOf":"2026-11-01"}],"columns":2}
 ```
 
 ### DataTable
@@ -130,7 +134,7 @@ Example data:
 
 ### MetricTiles
 
-One to six headline values. With a numeric baseline, each tile shows the change as up, down or flat with the difference.
+One to six headline values. With a numeric baseline, each tile shows the change as up, down or flat with the difference. A caption adds a line in your own words.
 
 Widget node: `{ "kind": "widget", "widget": "metric@1", "data": { ... } }`. Also exported as `Metric`.
 
@@ -138,12 +142,12 @@ Widget node: `{ "kind": "widget", "widget": "metric@1", "data": { ... } }`. Also
 | --- | --- | --- | --- |
 | `label` | string | no | A single tile: what the value measures. Supply label and value, or tiles. |
 | `value` | string \| number \| boolean \| null | no | A single tile: the value to show. |
-| `tiles` | { label: string; value: string \| number \| boolean \| null; unit?: string; baseline?: string \| number \| boolean \| null }[] | no | 1 to 6 tiles. |
+| `tiles` | { label: string; value: string \| number \| boolean \| null; unit?: string; baseline?: string \| number \| boolean \| null; caption?: string; flag?: boolean }[] | no | 1 to 6 tiles. caption is a line of text under the value, such as In 31 days, up to 200 characters. flag: true marks a caption that needs attention with a dot and heavier text; it needs a caption. |
 
 Example data:
 
 ```json
-{"tiles":[{"label":"Monthly cost","value":1200,"unit":"USD","baseline":1000},{"label":"Open tickets","value":14,"baseline":14}]}
+{"tiles":[{"label":"Monthly cost","value":1200,"unit":"USD","baseline":1000},{"label":"Open tickets","value":14,"baseline":14},{"label":"Renewal","value":"12 December","caption":"In 31 days","flag":true}]}
 ```
 
 ### Chart
@@ -160,11 +164,12 @@ Widget node: `{ "kind": "widget", "widget": "chart@1", "data": { ... } }`.
 | `labels` | string[] | no | Category labels along the x axis, with series. |
 | `xLabel` | string | no | The x axis title. |
 | `yLabel` | string | no | The y axis title. |
+| `emphasis` | { label: string } \| { series: string } | no | Draw one label's marks, or one series, in full and let the rest recede. Give label (one of the labels) or series (a series name), not both. A chart of one series inks the picked bar and greys the others. |
 
 Example data:
 
 ```json
-{"type":"bar","labels":["Q1","Q2","Q3"],"series":[{"name":"Acme","values":[120,135,150]},{"name":"Globex","values":[98,110,104]}],"xLabel":"Quarter","yLabel":"Cost"}
+{"type":"bar","labels":["Q1","Q2","Q3"],"series":[{"name":"Acme","values":[120,135,150]},{"name":"Globex","values":[98,110,104]}],"xLabel":"Quarter","yLabel":"Cost","emphasis":{"series":"Acme"}}
 ```
 
 ### Comparison
@@ -355,4 +360,37 @@ Example data:
 
 ```json
 {"columns":["To do","Doing","Done"],"stateKey":"launch-board","cards":[{"text":"Draft the announcement","owner":"Dana"},{"text":"Book the venue","column":"Doing"}]}
+```
+
+### Conversation
+
+A thread of messages to read, such as a support ticket or an email exchange: who said it, when, and the text. Read-only; for discussion on the canvas people use comments.
+
+Widget node: `{ "kind": "widget", "widget": "conversation@1", "data": { ... } }`.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `messages` | { from: string; text: string; at?: string; side?: "theirs" \| "ours" }[] | yes | 1 to 200 messages, shown in the order given. from is who said it and at is free text, such as a time. side ours sets your own team's messages in from the edge with a rule; default theirs. Shown as text, never as HTML. |
+
+Example data:
+
+```json
+{"messages":[{"from":"Dana at Northwind","text":"We were charged twice after upgrading.","at":"09:14"},{"from":"Sam","text":"I can see both charges. Checking with billing now.","at":"09:20","side":"ours"}]}
+```
+
+### StatusList
+
+Read-only results of checks, each marked pass, flag, fail or pending by a symbol and a word, with a count such as 3 of 4 pass. Use Checklist when people tick the items themselves.
+
+Widget node: `{ "kind": "widget", "widget": "status-list@1", "data": { ... } }`.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `items` | { label: string; status: "pass" \| "flag" \| "fail" \| "pending"; note?: string }[] | yes | 1 to 100 checks. flag is a check that needs a look; fail is one that did not pass; pending has not run. note is a line of detail under the label. Shown as text, never as HTML. |
+| `summary` | boolean | no | Show the count of passes above the list. Default true. |
+
+Example data:
+
+```json
+{"items":[{"label":"Ties to the general ledger","status":"pass"},{"label":"Cloud spend up 18%","status":"flag","note":"Needs commentary"}]}
 ```

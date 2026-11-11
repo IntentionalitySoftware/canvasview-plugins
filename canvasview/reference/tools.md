@@ -2,7 +2,7 @@
 
 # CanvasView MCP tools
 
-Plugin version 0.5.0. Every tool CanvasView serves at `https://app.canvasview.dev/mcp`, with its description and input fields.
+Plugin version 0.6.0. Every tool CanvasView serves at `https://app.canvasview.dev/mcp`, with its description and input fields.
 Errors come back as a tool result with `isError: true` and JSON text `{ error, message }`; invalid input adds `issues: [{ path, message }]`. See errors.md.
 
 - [`create_canvas`](#create_canvas)
@@ -55,7 +55,7 @@ Create a shared canvas from catalog widgets or sandboxed React TSX components. R
 | `access` | { mode?, invited?, visibility? } | no | |
 | `title` | string (1 to 120 characters) | no | |
 | `question` | string (1 to 4000 characters) | no | |
-| `nodes` | array of ({ id, kind: "widget", widget, data, position?, size? } \| { id, kind: "component", source?, ref?, packages?, data?, position?, size? }) (1 to 100 items) | no | |
+| `nodes` | array of ({ id, kind: "widget", title?, widget, data, position?, size? } \| { id, kind: "component", source?, ref?, packages?, data?, position?, size? }) (1 to 100 items) | no | |
 | `edges` | array of { from, to, label? } (at most 200 items) | no | |
 | `answerSchema` | { type: "object", properties, required?, additionalProperties?: false } | no | |
 | `expiresInHours` | integer (1 to 2160) | no | |
@@ -68,7 +68,7 @@ Create a shared canvas from catalog widgets or sandboxed React TSX components. R
 Nested fields:
 
 - `access`: `mode?`: "link" | "signed_in" | "invited"; `invited?`: array of string (email) matching `^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$` (at most 254 characters) (at most 50 items); `visibility?`: "private" | "organization"
-- `nodes (kind "widget")`: `id`: string (1 to 64 characters); `kind`: "widget"; `widget`: "note@1" | "facts@1" | "table@1" | "timeline@1" | "metric@1" | "chart@1" | "decision@1" | "form@1" | "checklist@1" | "comparison@1" | "document@1" | "approval@1" | "calculator@1" | "poll@1" | "ranked-vote@1" | "board@1"; `data`: object; `position?`: { x, y }; `size?`: { width, height }
+- `nodes (kind "widget")`: `id`: string (1 to 64 characters); `kind`: "widget"; `title?`: string (1 to 120 characters); `widget`: "note@1" | "facts@1" | "table@1" | "timeline@1" | "metric@1" | "chart@1" | "decision@1" | "form@1" | "checklist@1" | "comparison@1" | "document@1" | "approval@1" | "calculator@1" | "poll@1" | "ranked-vote@1" | "board@1" | "conversation@1" | "status-list@1"; `data`: object; `position?`: { x, y }; `size?`: { width, height }
 - `nodes (kind "component")`: `id`: string (1 to 64 characters); `kind`: "component"; `source?`: string (1 to 65536 characters); `ref?`: string (at most 200 characters); `packages?`: record of string (at most 256 characters); `data?`: object; `position?`: { x, y }; `size?`: { width, height }
 - `edges`: `from`: string; `to`: string; `label?`: string (at most 120 characters)
 - `answerSchema`: `type`: "object"; `properties`: record of object; `required?`: array of string (at most 30 items); `additionalProperties?`: false
@@ -93,18 +93,18 @@ Nested fields:
 
 ## patch_canvas
 
-Change part of a canvas without resending it: use it for small changes and data refreshes, and update_canvas to replace the whole canvas. 1 to 50 operations apply in order, all or nothing: add_node { node, after? } (after: a node ID to insert after; default last), update_node { id, data?, source?, ref?, packages?, size?, widget? } (only the given fields change; data replaces the node's whole data; source, ref and packages on component nodes, packages: null removes them; widget on widget nodes), remove_node { id } (also removes its edges, its place in the layout and components view, and anyone's control of it; shared state stays), add_edge { from, to, label? }, remove_edge { from, to }, set { title?, question?, answerSchema?, stayOpen?, contract?, dataSources? } (question: null, answerSchema: null, contract: null or dataSources: null removes it; answerSchema cannot be removed once answers exist; contract replaces the whole app contract), set_state { values } (shared state written with the patch; null clears a key: use it when a contract change leaves stored values that no longer fit). Removing a node the contract names as a role or writer is refused unless the patch also sets the contract. Unchanged components keep their source, so never resend it. The patched canvas is checked as update_canvas checks a spec; a failure names the operation and changes nothing. Costs one update, like update_canvas, however many operations it holds; a patch that only changes data (and size) on existing nodes is free and uses no included update, and open components receive the new data without reloading. Retrying the same patch with the same baseVersion returns the same result and charges once. Read the canvas again if the version conflicts. validate_canvas checks a patch and its price for free.
+Change part of a canvas without resending it: use it for small changes and data refreshes, and update_canvas to replace the whole canvas. 1 to 50 operations apply in order, all or nothing: add_node { node, after? } (after: a node ID to insert after; default last), update_node { id, data?, source?, ref?, packages?, size?, title?, widget? } (only the given fields change; data replaces the node's whole data; source, ref and packages on component nodes, packages: null removes them; widget and title on widget nodes, title: null removes it), remove_node { id } (also removes its edges, its place in the layout and components view, and anyone's control of it; shared state stays), add_edge { from, to, label? }, remove_edge { from, to }, set { title?, question?, answerSchema?, stayOpen?, contract?, dataSources? } (question: null, answerSchema: null, contract: null or dataSources: null removes it; answerSchema cannot be removed once answers exist; contract replaces the whole app contract), set_state { values } (shared state written with the patch; null clears a key: use it when a contract change leaves stored values that no longer fit). Removing a node the contract names as a role or writer is refused unless the patch also sets the contract. Unchanged components keep their source, so never resend it. The patched canvas is checked as update_canvas checks a spec; a failure names the operation and changes nothing. Costs one update, like update_canvas, however many operations it holds; a patch that only changes data (and size) on existing nodes is free and uses no included update, and open components receive the new data without reloading. Retrying the same patch with the same baseVersion returns the same result and charges once. Read the canvas again if the version conflicts. validate_canvas checks a patch and its price for free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `baseVersion` | integer (greater than 0) | yes | |
-| `operations` | array of ({ op: "add_node", node, after? } \| { op: "update_node", id, data?, source?, ref?, packages?, size?, widget? } \| { op: "remove_node", id } \| { from, to, label?, op: "add_edge" } \| { op: "remove_edge", from, to } \| { op: "set", title?, question?, answerSchema?, stayOpen?, contract?, dataSources? } \| { op: "set_state", values }) (1 to 50 items) | yes | |
+| `operations` | array of ({ op: "add_node", node, after? } \| { op: "update_node", id, data?, source?, ref?, packages?, size?, title?, widget? } \| { op: "remove_node", id } \| { from, to, label?, op: "add_edge" } \| { op: "remove_edge", from, to } \| { op: "set", title?, question?, answerSchema?, stayOpen?, contract?, dataSources? } \| { op: "set_state", values }) (1 to 50 items) | yes | |
 | `id` | string matching `^[a-f0-9]{32}$` | yes | |
 
 Nested fields:
 
-- `operations (op "add_node")`: `op`: "add_node"; `node`: { id, kind: "widget", widget, data, position?, size? } | { id, kind: "component", source?, ref?, packages?, data?, position?, size? }; `after?`: string (1 to 64 characters)
-- `operations (op "update_node")`: `op`: "update_node"; `id`: string (1 to 64 characters); `data?`: object; `source?`: string (1 to 65536 characters); `ref?`: string (at most 200 characters); `packages?`: record of string (at most 256 characters) | null; `size?`: { width, height }; `widget?`: "note@1" | "facts@1" | "table@1" | "timeline@1" | "metric@1" | "chart@1" | "decision@1" | "form@1" | "checklist@1" | "comparison@1" | "document@1" | "approval@1" | "calculator@1" | "poll@1" | "ranked-vote@1" | "board@1"
+- `operations (op "add_node")`: `op`: "add_node"; `node`: { id, kind: "widget", title?, widget, data, position?, size? } | { id, kind: "component", source?, ref?, packages?, data?, position?, size? }; `after?`: string (1 to 64 characters)
+- `operations (op "update_node")`: `op`: "update_node"; `id`: string (1 to 64 characters); `data?`: object; `source?`: string (1 to 65536 characters); `ref?`: string (at most 200 characters); `packages?`: record of string (at most 256 characters) | null; `size?`: { width, height }; `title?`: string (1 to 120 characters) | null; `widget?`: "note@1" | "facts@1" | "table@1" | "timeline@1" | "metric@1" | "chart@1" | "decision@1" | "form@1" | "checklist@1" | "comparison@1" | "document@1" | "approval@1" | "calculator@1" | "poll@1" | "ranked-vote@1" | "board@1" | "conversation@1" | "status-list@1"
 - `operations (op "remove_node")`: `op`: "remove_node"; `id`: string (1 to 64 characters)
 - `operations (op "add_edge")`: `from`: string; `to`: string; `label?`: string (at most 120 characters); `op`: "add_edge"
 - `operations (op "remove_edge")`: `op`: "remove_edge"; `from`: string; `to`: string

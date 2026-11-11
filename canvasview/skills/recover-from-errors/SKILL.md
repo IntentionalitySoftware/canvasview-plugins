@@ -47,6 +47,8 @@ Creating a canvas costs $0.50. Each canvas includes 10 updates; after that each 
 | `spend_cap` | The daily spending cap for the account or this API key is reached | Tell the person; they can raise the daily cap on the same page, or wait for the next day |
 | `payment_disputed` | A payment is under dispute | Stop. The person should contact support@canvasview.dev |
 | `rate_limit` | Too many calls | Wait one second, then retry once. Slow down rather than retrying in a loop |
+| `account_pending` | The account is new and waiting for review | Tell the person; CanvasView emails them when it is approved. Meanwhile only `list_examples`, `get_example`, `get_kit_reference`, `list_widgets`, `validate_canvas` and `get_balance` work. Do not retry other tools until they say it is approved |
+| `account_declined` | The account was not approved | Stop. The person can contact support@canvasview.dev |
 
 Nothing is charged when a call fails these checks or fails validation.
 

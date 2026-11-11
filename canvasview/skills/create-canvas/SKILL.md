@@ -62,18 +62,18 @@ empty value would not make a valid canvas.
 | Two to four options side by side | `Comparison` (`comparison@1`) |
 | A contract or long text, a diff | `DocumentViewer` (`document@1`) |
 | Dated events | `Timeline` (`timeline@1`) |
+| A message thread to read; results of checks | `Conversation` (`conversation@1`); `StatusList` (`status-list@1`) |
 | Pick one option | `Decision` (`decision@1`) |
 | A few typed fields | `SchemaForm` (`form@1`) |
 | Tick off items | `Checklist` (`checklist@1`) |
 | Approve or reject a statement | `Approval` (`approval@1`) |
 | Explore numbers live | `Calculator` (`calculator@1`) |
 
-3. Write a new component only when no block fits, for example a custom interaction or a
-   layout the blocks cannot express. Follow the build-component skill, and save it with
-   `save_component` if it could be used again.
+3. Write a new component only when no block fits, for example a custom interaction or a layout the
+   blocks cannot express. Follow the build-component skill, and save it with `save_component` if reusable.
 
-Exact props for every block are in [kit.md](../../reference/kit.md) (also returned by
-`get_kit_reference`). Exact tool inputs are in [tools.md](../../reference/tools.md).
+Give each widget node a `title` in the reader's words, such as "Open tickets"; without one its heading is the widget type.
+Exact props for every block are in [kit.md](../../reference/kit.md) (also returned by `get_kit_reference`). Exact tool inputs are in [tools.md](../../reference/tools.md).
 
 ## 3. Wire answers correctly
 
