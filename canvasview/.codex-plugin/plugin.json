@@ -1,0 +1,36 @@
+{
+  "name": "canvasview",
+  "version": "0.6.0",
+  "description": "Build shared canvases that people open by link, then read back their answers and shared state with CanvasView.",
+  "author": {
+    "name": "Intentionality Software",
+    "url": "https://canvasview.dev"
+  },
+  "homepage": "https://docs.canvasview.dev/",
+  "repository": "https://github.com/IntentionalitySoftware/canvasview-plugins",
+  "keywords": [
+    "canvas",
+    "collaboration",
+    "decisions",
+    "mcp"
+  ],
+  "interface": {
+    "displayName": "CanvasView",
+    "shortDescription": "Shared canvases for people",
+    "longDescription": "Build a canvas of components that people open by link and work on together, then read back their answers and shared state.",
+    "developerName": "Intentionality Software",
+    "category": "Productivity",
+    "capabilities": [
+      "Create shared canvases",
+      "Collect structured answers",
+      "Build sandboxed React components",
+      "Read shared state"
+    ],
+    "websiteURL": "https://canvasview.dev/",
+    "defaultPrompt": [
+      "Create a CanvasView canvas that asks me to choose between two options, and send me the link."
+    ]
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}
