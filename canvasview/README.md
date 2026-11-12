@@ -26,8 +26,8 @@ uses it, run `/mcp`, choose the CanvasView server and sign in to CanvasView in y
 You need a CanvasView account with credits.
 To disconnect, use "Clear authentication" in `/mcp`, or disconnect the client in CanvasView.
 
-Then try it: ask Claude to create a CanvasView test canvas with two choices and give you the link.
-Open the link, submit an answer, and ask Claude to read it back.
+Then try it: ask Claude to build a CanvasView test canvas with a note, a table and a checklist, and
+give you the link. Open it, tick something off, and ask Claude what changed.
 
 ## API key instead (scripts and headless use)
 
