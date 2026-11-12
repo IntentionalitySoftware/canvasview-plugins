@@ -2,67 +2,98 @@
 
 # CanvasView error codes
 
-Plugin version 0.6.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.7.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
-| `account_declined` | 403 | This account was not approved. Contact support@canvasview.dev with any questions. |
+| `account_declined` | 403 | This account was not approved. Contact support@canvasview.dev with any questions. / This account was not approved. Contact support@canvasview.dev. |
 | `account_disabled` | 403 | This account is unavailable. |
-| `account_pending` | 403 | This account is waiting for review. Tell the person you work for that CanvasView emails them when it is approved. Until then only list_examples, get_example, get_kit_reference, list_widgets, validate_canvas and get_balance work. / This account is waiting for review. Finish onboarding at /onboarding; we email you when it is approved. |
-| `account_unavailable` | 503 | Try again in a moment. |
-| `agent_setup_pending` | 403 | Connect your agent, or choose to do it later, at /onboarding. The workspace opens after that. |
+| `account_not_found` | 404 | Select an existing account. |
+| `account_pending` | 403 | This account is waiting for review. Tell the person you work for that CanvasView emails them when it is approved. Until then only list_examples, get_example, get_kit_reference, list_widgets, validate_canvas and get_balance work. / This account is on the waitlist. It opens once CanvasView approves it. |
+| `agent_busy` | 429 | The canvas's agent has … prompts waiting. Send this one when it has caught up. |
+| `agent_not_connected` | 409 | No agent has connected to this account yet. |
+| `agent_not_running` | 409 | The canvas's agent changes the canvas only during its own run. |
+| `agent_setup_pending` | 403 | Connect your agent, or choose to do it later, to open the workspace. |
+| `agent_unavailable` | 503 | The canvas's agent is not available right now. / The canvas's agent is not set up on this deployment. |
+| `answer_limit` | 409 |  |
 | `answers_exist` | 409 | This canvas has answers, so it keeps its answer schema. Change the schema instead of removing it. |
 | `canvas_closed` | 409 | This canvas no longer accepts changes. / This canvas is read-only. Only active canvases can write to a data source. |
 | `canvas_kept` | 409 | This canvas is kept permanently and has no expiry. Unpin it first. |
 | `canvas_limit` | 409 | This account has … active canvases, the most allowed. Delete some with delete_canvas or let them expire before creating another. |
-| `canvas_not_found` | 404 | This canvas is no longer available. / Use a canvas belonging to this account. |
+| `canvas_locked` | 409 | … is editing this canvas. Try again in … seconds, or once they finish. |
+| `canvas_not_found` | 404 | Use a canvas belonging to this account. / Check the link with the person who shared it. / This canvas is no longer available. |
 | `comment_limit` | 409 | A canvas holds at most … comments. |
 | `comment_not_found` | 404 | Reply to a comment from list_comments on this canvas. |
 | `comment_too_long` | 400 | Keep comments within … characters. |
 | `component_compile_failed` | 400 | …, line …: … |
 | `component_limit` | 409 | This library holds … components. Delete one with delete_component before saving another. |
-| `component_not_found` | 400, 404 | …: supply source, or ref naming a saved component. / No saved component is named …. Use search_components to find one. / No saved component matches …. Use search_components to find one, or send source. |
+| `component_not_found` | 404, 400 | No saved component is named …. Use search_components to find one. / No saved component matches …. Use search_components to find one, or send source. / …: supply source, or ref naming a saved component. |
+| `components_required` | 400 | Send the compiled component for every component node. / Send the compiled component for each component node this patch adds or changes. |
 | `connection_revoked` | 403 | This MCP client was disconnected in CanvasView. |
+| `customer_recovery_required` | 409 | Review the Stripe customers for this account before retrying. |
 | `data_content_type` | 502 | The data source answered with a type other than JSON or text. |
 | `data_method_not_allowed` | 405 | The owner has not allowed this method on the data source. |
 | `data_redirect` | 502 | The data source answered with a redirect, which CanvasView does not follow. Ask the owner to use the final URL. |
 | `data_request_too_large` | 413 | Keep a data request body within 256 KB. |
 | `data_response_too_large` | 502 | The data source answered with more than 1 MB. Ask for less, for example with a page size in query. |
-| `data_source_exists` | 409 | This account already has a data source with that name. Call list_data_sources and declare it in dataSources. |
+| `data_source_exists` | 409 | This account already has a data source with that name. Edit it, or choose another name. / This account already has a data source with that name. Call list_data_sources and declare it in dataSources. |
 | `data_source_limit` | 409 | An account holds at most … data sources. Remove one first. |
 | `data_source_not_declared` | 403 | This canvas does not declare the data source. The agent adds its name to dataSources in the canvas spec. |
-| `data_source_not_found` | 404 | The canvas's account has no data source with this name. / Choose a data source in this account. |
-| `data_source_request_limit` | 409 | The owner has 50 open data source requests. Ask them to review the ones in settings first. |
+| `data_source_not_found` | 404 | Choose a data source in this account. / The canvas's account has no data source with this name. |
+| `data_source_request_limit` | 409 | The owner has … open data source requests. Ask them to review the ones in settings first. |
 | `data_source_secret_unreadable` | 503 | This data source's secrets cannot be read. Ask the owner to enter them again in settings. |
 | `data_sources_unavailable` | 503 | Data sources are not available yet: CanvasView has no encryption key for their secrets. Nothing is stored. |
 | `data_timeout` | 504 | The data source did not answer within 10 seconds. |
 | `data_unreachable` | 502 | The data source could not be reached. / The data source stopped answering. |
 | `email_required` | 400 | Add a primary email address to your account. |
 | `example_not_found` | 404 | No example is named …. Use one of …. |
-| `forbidden` | 403 | Only the canvas owner or an Admin can see who opened it. / Only the canvas owner or an Admin can change its visibility. |
-| `idempotency_conflict` | 409 | Use the original request with this idempotency key. |
+| `forbidden` | 403 | Only the canvas owner or an Admin can see who opened it. / This is for members of the organization. / Only a signed-in Admin can change a canvas's owner. / Sign in to CanvasView to see the Canvases page. / Only an API key or a connected agent asks who it is. / Sign in to CanvasView to manage billing. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Admin can manage data sources. / Only an agent asks for a data source. An Admin creates one in settings. / Answers come from the people a canvas is shared with. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. / You can view this canvas, but not take part in it. |
+| `grant_recovery_required` | 409 | Review Stripe before retrying grant issuance. |
+| `hold_not_found` | 404 | This operation has no open hold. It may have settled already. |
+| `hold_too_recent` | 409 | Wait until the hold is five minutes old. Its request may still finish. |
+| `idempotency_conflict` | 409 | Use the original request with this idempotency key. / This request ID was used for a different adjustment. |
 | `insufficient_credits` | 402 | The account needs more credits before starting this request. |
-| `internal_error` | 500 | Retry with the original idempotency key. |
+| `internal_error` | 500 | Retry with the original idempotency key. / Something went wrong on our side. Read the canvas again with get_canvas and retry. / Something went wrong on our side. Retry the request. |
+| `invalid_answer` | 400 |  |
 | `invalid_bindings` | 400 | Fix the bindings. … |
 | `invalid_comment` | 400 | Write a comment of plain text. |
+| `invalid_content_type` | 415 |  |
 | `invalid_data_path` | 400 | The path is not allowed. … |
 | `invalid_data_request` | 400 | Send a body with POST, PUT, PATCH or DELETE only. |
 | `invalid_data_source_url` | 400 | Remove the query from the base URL. Components add their own. |
-| `invalid_input` | 400 | Enter a value for the … header. / The input failed validation. issues lists each path and message. |
+| `invalid_expiry` | 400 | Only a credit can expire. / Choose an expiry in the future. |
+| `invalid_input` | 400 | Use a … name of lowercase letters, digits and hyphens. / Send a Stripe payment ID. / Enter a value for the … header. / Nothing was changed. Give operations: a list of operations, such as […]. / Nothing was changed. Fix every problem below and send the whole patch again. / Open the canvas again before reporting it. / Send the canvas to the object named by its ID. / invited: list at least one email address when mode is invited. / Send at least one tool to publish or to remove. / The input failed validation. issues lists each path and message. |
 | `invalid_json` | 400 | Provide a JSON request body. / Provide a valid JSON request body. |
 | `invalid_key` | 400 | Use state keys of 1 to … characters. |
+| `invalid_message` | 400 | Send layout.move with node, x and y, or layout.tidy with sizes. |
+| `invalid_model` | 400 | The canvas's agent cannot run on "…". Choose a model identifier from Cloudflare AI Gateway. |
 | `invalid_node` | 400 | Use a node ID from this canvas, or leave out nodeId to comment on the whole canvas. |
-| `invalid_origin` | 403 | Use an authorized MCP client. |
+| `invalid_origin` | 403 | Use an authorized MCP client. / Open CanvasView to change account settings. / Open the canvas link to join. |
 | `invalid_params` | 400 | Fix the params for template …. … |
-| `invalid_patch` | 400 | Operation … (…): … |
+| `invalid_patch` | 400 | …: … |
+| `invalid_prompt` | 400 | Write what you want the canvas's agent to do. |
+| `invalid_signature` | 400 | The webhook signature did not verify. |
+| `invalid_source_path` | 400 | The path is not allowed. … |
+| `invalid_stripe_signature` | 400 | Send a signed Stripe event. |
 | `invalid_template` | 400 | Fix the template placeholders. … / With the canvas data removed, these paths fail validation. Bind each to a parameter (with a default when it needs one): …. / The template does not make a valid canvas with sample parameter values (each default, or an empty value of its type; a required string is its name). … / Fix the template access. … |
+| `invalid_tool_input` | 400 | The input does not fit …'s input schema. … |
 | `invalid_value` | 400 | Use JSON values: null, booleans, numbers, strings, arrays, or objects. |
-| `key_limit` | 409 | A canvas holds at most … state keys. |
+| `key_limit` | 409 | Revoke an unused key before creating another. / A canvas holds at most … state keys. |
+| `key_not_found` | 404 | Select a key you manage. / Select a disconnected agent. / Select an active key. |
+| `lock_not_held` | 409 | You no longer hold the editing lock. Acquire it again before changing the canvas. |
 | `membership_unavailable` | 503 | CanvasView could not confirm this key's organization membership. Try again in a moment. |
-| `method_not_allowed` | 405 | Use GET for data sources, PUT or DELETE for one, or DELETE for a request. |
+| `method_not_allowed` | 405, 404 | Use GET to search …s. / Use GET, PUT or DELETE for a …. / Use the method documented for this endpoint. / Stripe sends POST. / Clerk sends POST. |
+| `no_answer_expected` | 409 | This canvas is a workspace and does not take answers. |
+| `no_hold` | 409 | There is no hold for this run. |
 | `no_organization` | 401 | Sign in at app.canvasview.dev first, then connect your agent again. |
+| `not_a_member` | 400 | Choose a current member of this organization. |
 | `not_a_writer` | 403 | The canvas contract does not let this writer change this key. |
+| `not_found` | 404 | Use … or …/:name. |
 | `not_invited` | 403 | This canvas is by invitation. Ask the owner to invite your email address. |
+| `nothing_to_debit` | 409 | The balance is zero or below. Tick “allow negative” to debit anyway. |
+| `notification_not_found` | 404 | Choose a notification in this account. |
+| `onboarding_closed` | 409 | This account has been reviewed. Its answers can no longer change. |
+| `organization_changed` | 409 | This person is no longer in this organization. |
 | `organization_required` | 403 | Choose an organization to continue. |
 | `package_build_failed` | 400 | The package could not be bundled for the sandbox. Use another version or another package. |
 | `package_build_timeout` | 503 | Bundling took longer than 25 seconds. Retry; later builds reuse the first. |
@@ -73,33 +104,56 @@ Plugin version 0.6.0. A failed tool call returns `isError: true` with JSON text 
 | `package_dependency_missing` | 400 | A package needs another package it does not bundle, such as a peer dependency. Add it to packages. |
 | `package_deprecated` | 400 | The version is deprecated on the npm registry. Use a version that is not deprecated. |
 | `package_malware` | 400 | The version has a malware advisory in OSV. Remove the package. |
-| `package_not_found` | 400 | The package or its exact version is not on the npm registry. Check the name, or use a published version. |
+| `package_not_found` | 404, 400 | This package is no longer stored. Ask the agent to update the canvas. / The package or its exact version is not on the npm registry. Check the name, or use a published version. |
 | `package_refused` | 400 | Several packages were refused for different reasons. issues lists each one. |
 | `package_too_large` | 400 | The package pulls in more than 5 MB of code. Import a smaller entry point or use a smaller package. |
 | `package_too_recent` | 400 | The version was published less than 3 days ago. Use an older version; the message suggests one. |
-| `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Reduce the request size. / Keep the template spec below 1 MB. / Reduce the template's canvas below 1 MB with sample values. |
+| `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Keep the template spec below 1 MB. / Reduce the template's canvas below 1 MB with sample values. / Keep a tool's input within 64 KB. / Reduce the request size. |
 | `payment_disputed` | 402 | A payment on this account is under dispute. Contact support@canvasview.dev. |
+| `payment_recovery_required` | 409 | Review the Stripe payment before retrying grant issuance. |
 | `pin_limit` | 409 | This account already keeps … canvases, the most allowed. Unpin one before keeping another. |
-| `rate_limit` | 429 | Wait one second before retrying. / Too many data requests. Wait a minute before retrying. |
-| `read_only` | 409 | This canvas is read-only. Only active canvases accept state changes. |
+| `prompt_too_long` | 400 | Keep a prompt within … characters. This one has …. |
+| `rate_limit` | 429 | Wait one second before retrying. / Too many data requests. Wait a minute before retrying. / A canvas tests tools at most … times a minute. Wait a moment. / A tool writes shared state at most … times a second. |
+| `read_only` | 409 | This canvas no longer accepts changes. / This canvas is read-only. Only active canvases accept state changes. |
+| `repository_moved` | 409 | The repository changed while this was being prepared. Try again. |
+| `repository_unavailable` | 503 | This canvas's repository is not available right now. Try again in a moment. |
 | `request_in_flight` | 409 | Wait for the current paid request or retry it with its original key. |
+| `review_conflict` | 409 | Reload the application to see its latest review. / This request changed after it was opened. Reload it and decide again. |
 | `schema_mismatch` | 400 | The value does not fit this key's schema in the canvas contract. |
 | `sign_in_required` | 401 | Sign in to open this canvas. |
-| `sign_in_unavailable` | 503 | Sign-in is not configured yet. / Try again in a moment. |
+| `sign_in_unavailable` | 503 | Try again in a moment. |
 | `signup_unavailable` | 503 | Sign-up is not configured yet. |
 | `spend_cap` | 402 | The account has reached its daily spending cap. |
-| `state_conflict` | 409 | Shared state on this canvas does not fit the new contract. Set each value to one that fits, or clear it with null, in the same request. |
+| `state_conflict` | 409 |  |
+| `state_key_undeclared` | 403 | This tool's manifest does not list … in writes. |
 | `state_too_large` | 413 | Keep the canvas state within 1 MB. |
+| `stripe_event_too_large` | 413 | Send a Stripe event below 1 MB. |
+| `stripe_mode_mismatch` | 400 | Stripe event mode does not match this environment. |
+| `stripe_unavailable` | 503 | Stripe billing is unavailable. / Credit refills are currently unavailable. |
 | `template_limit` | 409 | This account holds … templates. Delete one with delete_template before saving another. |
-| `template_not_found` | 400, 404 | No template is named …. Use search_templates to find one, or send a full spec. / No template is named …. Use search_templates to find one. |
+| `template_not_found` | 404, 400 | No template is named …. Use search_templates to find one. |
 | `template_with_spec` | 400 | Send template with params, or a full spec, not both. Remove …, or template. |
-| `unauthorized` | 401 | Send a CanvasView API key as a bearer token. / Use an active CanvasView API key. / Sign in to CanvasView. / Use a preview CanvasView API key. / Sign in to connect CanvasView. |
+| `tool_busy` | 429 | This canvas is running as many tool calls as it can. Try again in a moment. |
+| `tool_not_found` | 404 | This canvas has no tool of that name. / This canvas's repository has no such tool. Send the tool's code, manifest and cases to test it. / There is no tools/… at …. |
+| `tool_replaced` | 409 | This version of the tool is no longer live. |
+| `tool_stopped` | 409 | This run of the tool is over. |
+| `tool_timeout` | 504 | The tool did not answer in time. |
+| `tool_unavailable` | 503 |  |
+| `tools_invalid` | 400 | Nothing was published: …. … |
+| `tools_unavailable` | 503 | Tools are not available: no organization objects are bound. / Tools are not available on this canvas: … / CanvasView is still stopping earlier test runs on this canvas that did not finish. Try again in a minute. |
+| `unauthorized` | 401 | Sign in to CanvasView. / Send a CanvasView API key as a bearer token. / Sign in to connect CanvasView. / Use an active CanvasView API key. / Use a preview CanvasView API key. |
+| `unavailable` | 503 | CanvasView is not available right now. Try again in a moment. |
 | `undeclared_key` | 400 | The canvas contract does not declare this key. Add it to the contract's state first. |
 | `unknown_data_source` | 400 | Declare only data sources this account has. Unknown: …. … |
+| `unknown_node` | 404 | There is no node "…". Nodes: … |
 | `unknown_nodes` | 400 | Use node IDs from this canvas. Unknown: … |
+| `unknown_operation` | 404 | CanvasView has no such operation. / The canvas has no such operation. |
+| `unknown_widget` | 404 | There is no kit block "…". Blocks: … |
 | `value_too_large` | 413 | Keep each state value within 64 KB. |
-| `verification_hold` | 503 | Retry this request after the verification deploy. |
-| `version_conflict` | 409 | Read the current canvas version and reapply your changes. |
+| `version_conflict` | 409 | The canvas is at version …, not …. Read it again with get_canvas and reapply your changes with baseVersion …. |
+| `version_not_found` | 404 | This canvas no longer keeps that version. |
+| `webhook_not_found` | 404 | Save a webhook endpoint first. |
+| `webhook_unavailable` | 503 | The Clerk webhook is not configured. |
 
 ## Shared state write reasons
 

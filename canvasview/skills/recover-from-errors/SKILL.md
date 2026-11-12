@@ -24,7 +24,7 @@ Never create a second canvas with a new key. Instead:
 | --- | --- | --- |
 | `idempotency_conflict` | This key was used with different input | Use the original input, or a new key if you really mean a new canvas |
 | `request_in_flight` | A paid call with this key is still running | Wait, then retry with the original key |
-| `internal_error` | The server failed | Retry with the original key |
+| `internal_error` | The server failed | Do what the message says: retry `create_canvas` with the original key; for an update or patch, read the canvas again with `get_canvas`, then retry |
 
 ## Version conflicts
 
