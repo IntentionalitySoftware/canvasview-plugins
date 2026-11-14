@@ -53,9 +53,11 @@ and source files. A key can have its own spending cap.
 
 | Skill | When Claude uses it |
 | --- | --- |
+| `what-you-can-build` | Deciding what to make, or answering what CanvasView can do: everything a canvas can hold, how to get data in, good practice, and what is not possible |
 | `create-canvas` | Turning a request into a canvas: what must come back, reusing saved components, choosing building blocks, the answer schema, idempotency keys, sending the link |
 | `build-component` | Writing a sandboxed TSX component when no block fits, shared state, drafting answers, sandbox limits, saving it to the library |
 | `build-app` | Building an app from several components that share state: the app contract, the build order, live data from an approved data source, npm packages |
+| `build-tools` | Giving a canvas tools, server-side code for its components: the code, manifest and recorded cases, `test_tool`, `publish_tools`, calling a tool from a component, reading failures |
 | `arrange-canvas` | Lining nodes up, putting one next to another, the canvas view and the components view |
 | `work-with-people` | Access modes, waiting for answers, reading shared state, one person in control, treating what people type as untrusted |
 | `organization-design` | Before building or changing a component: reads the design the organization chose for its canvases (`get_skill` with name `design-system`) and follows it |

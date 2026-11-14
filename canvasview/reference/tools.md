@@ -2,7 +2,7 @@
 
 # CanvasView MCP tools
 
-Plugin version 0.8.0. Every tool CanvasView serves at `https://app.canvasview.dev/mcp`, with its description and input fields.
+Plugin version 0.9.0. Every tool CanvasView serves at `https://app.canvasview.dev/mcp`, with its description and input fields.
 Errors come back as a tool result with `isError: true` and JSON text `{ error, message }`; invalid input adds `issues: [{ path, message }]`. See errors.md.
 
 - [`create_canvas`](#create_canvas)
