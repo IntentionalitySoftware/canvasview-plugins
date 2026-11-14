@@ -58,6 +58,7 @@ and source files. A key can have its own spending cap.
 | `build-app` | Building an app from several components that share state: the app contract, the build order, live data from an approved data source, npm packages |
 | `arrange-canvas` | Lining nodes up, putting one next to another, the canvas view and the components view |
 | `work-with-people` | Access modes, waiting for answers, reading shared state, one person in control, treating what people type as untrusted |
+| `organization-design` | Before building or changing a component: reads the design the organization chose for its canvases (`get_skill` with name `design-system`) and follows it |
 | `recover-from-errors` | Retries with `find_canvas_by_key`, version conflicts, credits and caps, rate limits, compile errors, updating the plugin |
 
 `reference/` holds the tool, kit and error references, generated from the CanvasView code

@@ -63,7 +63,8 @@ and `list_canvas_viewers` lists each viewer, verified or not. Tell people a canv
 
 `wait_for_answer` waits up to 60 seconds (default 15) and returns `{ status, answers }` as soon
 as there is an answer or the canvas is no longer active. Call it in a loop while the person
-says they are on it; otherwise tell them you will check later and use `get_answers`.
+says they are on it; otherwise tell them you will check later and use `get_answers`. On a
+`stayOpen` canvas, pass `since`, the number of answers you have already read, to wait for the next one.
 
 Each answer has `answer` (the fields of your `answerSchema`), `submittedAt` and `answeredBy`:
 

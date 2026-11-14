@@ -1,6 +1,6 @@
 {
   "name": "canvasview",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Build shared canvases that people open by link, then read back their answers and shared state with CanvasView.",
   "author": {
     "name": "Intentionality Software",

@@ -2,15 +2,19 @@
 
 # CanvasView kit reference
 
-Plugin version 0.7.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.8.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
-Use kind: component, source: TSX, and data: an object. Export a default component that accepts { data, theme, size }. theme is "light" or "dark" and follows the viewer. Use static imports from react, @canvasview/kit and the npm packages the node declares in packages. Give the node title (1 to 120 characters) to name it on the canvas and on its tab, such as "Budget model"; without one it is labelled Made by an agent.
+Use kind: component, source: TSX, and data: an object. Export a default component that accepts { data, theme, size }. theme is "light" or "dark" and follows the viewer. Use static imports from react, @canvasview/kit and the npm packages the node declares in packages. Give the node title (1 to 120 characters) to name it on the canvas and on its tab, such as "Budget model"; without one it is labelled Made by an agent. Never build a sign-in screen or a field that asks for a password, API key, card number or other secret; reach outside services through an owner-approved data source. Style with Tailwind classes in className, a <style> element or the style prop. Tailwind is compiled when the canvas is saved, so write each class name in full rather than building it from parts. The kit's colours are bg-background, bg-surface, text-foreground, text-muted, border-border, bg-accent and text-accent-foreground, and bg-brand-1 to bg-brand-6 (also text- and border-) for the organization's brand colours, which are the chart series colours until it sets them; they and the dark: variant follow the viewer's theme. The sandbox has no network, so stylesheets, fonts and images from URLs never load.
 
 Before writing a component, call search_components (GET /api/components?query=) and reuse a match with kind: component, ref: its name, and data; get_component returns source to fork. Save anything reusable with save_component (PUT /api/components/:name). Saved components are private to this account.
 
 A widget node renders the kit export named by its widget field, with data as the props. Give it title (1 to 120 characters) to name it on the canvas, such as "Open tickets"; without one the heading is the widget type.
+
+## Pages inside a component
+
+A component can have several pages. Declare them on the node as routes: [{ path, title }], 1 to 20, such as [{ path: "/", title: "Revenue" }, { path: "/customers", title: "Customers" }]. A path is / or lowercase words with hyphens, such as /reports/monthly, at most 120 characters, with no parameters; a title is 1 to 60 characters and names the page in CanvasView's menus. The component opens on the first route. Read the open page with useRoute and render it; link between pages with RouteLink. A person can open the node on its own, full window, at /c/<canvas>/<node>, and on one page at /c/<canvas>/<node>/<path>, where the address follows the page and Back works. update_node routes replaces them in a patch and routes: null removes them. validate_canvas reports a problem at nodes[i].routes[j].path. Example: const { path } = useRoute(); return <><nav><RouteLink to="/">Revenue</RouteLink> <RouteLink to="/customers">Customers</RouteLink></nav>{path === "/customers" ? <Customers /> : <Revenue />}</>;
 
 ## Hooks
 
@@ -20,6 +24,7 @@ A widget node renders the kit export named by its widget field, with data as the
 - `useSharedGroup`: Call useSharedGroup(prefix) to get [entries, set, { error, me, loaded }] for values that several people write at once. entries maps each key <prefix>:<suffix> to its value as { suffix: value }, live; set(suffix, value) writes <prefix>:<suffix>, and null clears it (the key stays, as null). me is this viewer's participant id, so set(me, value) keeps one value per person that nobody else overwrites. loaded is false until the page has the canvas's state; until then empty entries may only be unread, so wait for it before writing a starting entry. Group writes are accepted while someone else uses the component. A participant id is a hash of a signed-in viewer or, on link canvases, a random id kept in the browser, so one person can take part again from another browser. Poll, RankedVote and Board are built on it.
 - `useGroupMode`: Call useGroupMode() in a component that several people use at once. Its frame then shows no "someone is using this" lock, asks for no control, and sends all its writes without one-person control. Poll, RankedVote and Board call it for you.
 - `useData`: Call useData(source, { path, query?, method?, body?, headers? }) to get { data, response, error, loading, refresh } from an owner-approved data source (list_data_sources). It reads when the component mounts and again when source or the request change. data is the parsed body when the source answers with JSON; response has status, ok, contentType and text. error has a code: data_status when the source answered with a status other than 2xx, otherwise why CanvasView refused or could not reach it. The canvas must list the source in dataSources. Use fetchData for writes.
+- `useRoute`: Call useRoute() to get { path, navigate } in a component that declares routes. path is the open page, one of the node's declared paths; it starts on the first, or on the page the address names. navigate(path) opens another; a path the node does not declare is ignored. The page is each viewer's own, like a browser tab: keep it in useSharedState instead when everyone should move together. Render the page for path yourself, and link between pages with RouteLink.
 
 ## Functions
 
@@ -39,7 +44,7 @@ Read shared state with get_canvas_state (GET /api/canvases/:id/state). Write up 
 
 ## Layout and views
 
-Nodes are placed automatically: flow (top to bottom along edges) when the canvas has edges, otherwise a grid. A node may declare size: { width 160-1600, height 80-1200 }; the default is 320 by 240. Positions live beside the spec in layout, returned by get_canvas, and moving a node never changes the version. People can drag nodes and tidy the canvas. Use arrange_canvas to lay out, align, distribute, move or size nodes without an update. A canvas also has a components view: 1, 2 or 4 areas with nodes as tabs, starting as one area with every node. Set the shared arrangement with arrange_canvas panes: { areas, tabs }, and the view links open in with view: canvas or components.
+Nodes are placed automatically: flow (top to bottom along edges) when the canvas has edges, otherwise a grid. A node may declare size: { width 160-1600, height 80-1200 }; the default width is 320. A node is as tall as its content, up to 1200, and the canvas makes room as pages measure it, so a declared height is only the room reserved before anyone opens the canvas. A size set with arrange_canvas sizes is fixed, and taller content scrolls inside it. Positions live beside the spec in layout, returned by get_canvas, and moving a node never changes the version. People can drag and resize nodes and tidy the canvas. Use arrange_canvas to lay out, align, distribute, move or size nodes without an update. A canvas also has a components view: 1, 2 or 4 areas with nodes as tabs. It starts empty, and people open the nodes they want into areas; closing a tab leaves the node on the canvas. Each person's screen remembers its own arrangement for each area count. Set the shared arrangement with arrange_canvas panes: { areas, tabs, sizes? }, where tabs has one list of node IDs per area and a node left out is open in none; sizes is the first region's share in percent of each split (2 areas: [left]; 4 areas: [top, top left, bottom left]). Set the view links open in with view: canvas or components.
 
 ## Building blocks
 
@@ -61,6 +66,7 @@ Nodes are placed automatically: flow (top to bottom along edges) when the canvas
 - [`Board`](#board) (widget `board@1`)
 - [`Conversation`](#conversation) (widget `conversation@1`)
 - [`StatusList`](#statuslist) (widget `status-list@1`)
+- [`RouteLink`](#routelink)
 - [`canvas`](#canvas) (object)
 - [`useTool`](#usetool) (hook)
 - [`ToolUnavailable`](#toolunavailable)
@@ -400,6 +406,21 @@ Example data:
 
 ```json
 {"items":[{"label":"Ties to the general ledger","status":"pass"},{"label":"Cloud spend up 18%","status":"flag","note":"Needs commentary"}]}
+```
+
+### RouteLink
+
+A link to one of the component's pages, for a component that declares routes. A real link: it takes focus and the keyboard, and is marked aria-current="page" while its page is open, which is the hook for styling the active one. Other anchor props (className, style, aria-label) pass through.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `to` | string | yes | One of the node's declared route paths, such as /customers. A path the node does not declare goes nowhere. |
+| `children` | ReactNode | yes | The link's content. |
+
+Example data:
+
+```json
+{"to":"/customers","children":"Customers"}
 ```
 
 ### canvas

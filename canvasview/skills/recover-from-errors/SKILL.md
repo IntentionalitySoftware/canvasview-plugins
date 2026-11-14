@@ -56,6 +56,8 @@ Nothing is charged when a call fails these checks or fails validation.
 
 - Validate first: `validate_canvas` takes the same input, reports every issue at once (with paths
   such as `nodes[2].data.rows`) and charges nothing. Fix them all, validate again, then retry.
+- `warnings` in a result are not errors: the call worked. A component wrote a colour or a font by
+  hand where the organization chose a design; make the change each message names.
 - `invalid_input`: read each `issues[].path` (for example `nodes.2.data`) and its message, fix
   exactly that, and retry with the same key. Check props against [kit.md](../../reference/kit.md).
 - `component_compile_failed`: the message names the node and line, such as

@@ -69,8 +69,8 @@ empty value would not make a valid canvas.
 | Approve or reject a statement | `Approval` (`approval@1`) |
 | Explore numbers live | `Calculator` (`calculator@1`) |
 
-3. Write a new component only when no block fits, for example a custom interaction or a layout the
-   blocks cannot express. Follow the build-component skill, and save it with `save_component` if reusable.
+3. Write a new component only when no block fits, for example a custom interaction or a layout the blocks cannot express. Follow the build-component skill, and save it with `save_component` if reusable.
+   First call `get_skill` with name `design-system`: if the organization chose a design, follow it.
 
 Give each node, widget or component, a `title` in the reader's words, such as "Open tickets"; without one its heading is the widget type, or "Made by an agent" on a component.
 Exact props for every block are in [kit.md](../../reference/kit.md) (also returned by `get_kit_reference`). Exact tool inputs are in [tools.md](../../reference/tools.md).

@@ -16,10 +16,11 @@ You rarely need to place nodes yourself:
 - With `edges`, nodes are laid out top to bottom along the edges (`flow`). Use edges to show
   how evidence leads to the decision.
 - Without edges, nodes go in a `grid`.
-- A node takes 320 by 240 unless it declares `size: { width, height }` (width 160 to 1600,
-  height 80 to 1200). Give wide content such as tables and charts a bigger size.
+- A node is 320 wide unless it declares `size: { width, height }` (width 160 to 1600). Give wide
+  content such as tables and charts more width. Height takes care of itself: a node grows to show
+  all its content, up to 1200, and the canvas makes room below it.
 
-People can drag nodes and tidy the canvas themselves. Resending a canvas with `update_canvas`
+People can drag and resize nodes and tidy the canvas themselves. Resending a canvas with `update_canvas`
 does not undo their moves: a position in the spec only wins when it is new or changed.
 
 ## `arrange_canvas` operations
@@ -30,7 +31,8 @@ Pass the canvas `id` and any of these. They apply in this order: `sizes`, `layou
 
 - `layout`: `flow`, `grid`, `row` or `column`.
 - `positions`: `{ "<node id>": { "x": 0, "y": 0 } }`, the top-left corner of each node.
-- `sizes`: `{ "<node id>": { "width": 640, "height": 360 } }`.
+- `sizes`: `{ "<node id>": { "width": 640, "height": 360 } }`. Fixes the size: taller content
+  scrolls inside it. Use it only when someone asks for a node of a set size; people can also drag a node's corner.
 - `align`: `left`, `right`, `top`, `bottom`, `center-horizontal` (one shared centre x) or
   `center-vertical` (one shared centre y).
 - `distribute`: `horizontal` or `vertical`, with gaps of `spacing` or shared evenly.
@@ -90,13 +92,16 @@ Set the shared arrangement and the view links open in:
 }
 ```
 
-- Give one list of node IDs per area. Each node appears at most once; nodes you leave out join
-  the first area.
-- People can change their own screen without changing the default for others. A new default
-  you set reaches people who have not arranged their own screen.
+- Give one list of node IDs per area. Each node appears at most once; nodes you leave out are
+  open in no area. Without a default the view starts empty and people open the nodes they want.
+- `sizes` sets each split's first region in percent (10 to 90): `[left]` for 2 areas,
+  `[top, top left, bottom left]` for 4. Leave it out for even splits.
+- People can change their own screen without changing the default for others, and their screen
+  remembers its own arrangement for each area count. A new default you set reaches people who
+  have not arranged their own screen.
 - A hidden tab is unmounted, so a component reloads when its tab is shown again. Values in
   shared state survive; values in React state do not.
-- Small screens show one area with every tab.
+- Small screens show one area: the person's one-area arrangement.
 
 ## Common mistakes
 

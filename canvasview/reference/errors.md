@@ -2,14 +2,14 @@
 
 # CanvasView error codes
 
-Plugin version 0.7.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.8.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
 | `account_declined` | 403 | This account was not approved. Contact support@canvasview.dev with any questions. / This account was not approved. Contact support@canvasview.dev. |
 | `account_disabled` | 403 | This account is unavailable. |
 | `account_not_found` | 404 | Select an existing account. |
-| `account_pending` | 403 | This account is waiting for review. Tell the person you work for that CanvasView emails them when it is approved. Until then only list_examples, get_example, get_kit_reference, list_widgets, validate_canvas and get_balance work. / This account is on the waitlist. It opens once CanvasView approves it. |
+| `account_pending` | 403 | This account is waiting for review. Tell the person you work for that CanvasView emails them when it is approved. Until then only list_examples, get_example, get_kit_reference, get_skill, list_widgets, validate_canvas and get_balance work. / This account is on the waitlist. It opens once CanvasView approves it. |
 | `agent_busy` | 429 | The canvas's agent has … prompts waiting. Send this one when it has caught up. |
 | `agent_not_connected` | 409 | No agent has connected to this account yet. |
 | `agent_not_running` | 409 | The canvas's agent changes the canvas only during its own run. |
@@ -47,11 +47,13 @@ Plugin version 0.7.0. A failed tool call returns `isError: true` with JSON text 
 | `data_unreachable` | 502 | The data source could not be reached. / The data source stopped answering. |
 | `email_required` | 400 | Add a primary email address to your account. |
 | `example_not_found` | 404 | No example is named …. Use one of …. |
-| `forbidden` | 403 | Only the canvas owner or an Admin can see who opened it. / This is for members of the organization. / Only a signed-in Admin can change a canvas's owner. / Sign in to CanvasView to see the Canvases page. / Only an API key or a connected agent asks who it is. / Sign in to CanvasView to manage billing. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Admin can manage data sources. / Only an agent asks for a data source. An Admin creates one in settings. / Answers come from the people a canvas is shared with. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. / You can view this canvas, but not take part in it. |
+| `forbidden` | 403 | Only the canvas owner or an Admin can see who opened it. / This is for members of the organization. / Only a signed-in Admin can change a canvas's owner. / Sign in to CanvasView to see the Canvases page. / Only a signed-in Admin can import a brand. / Only an API key or a connected agent asks who it is. / Sign in to CanvasView to manage billing. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Admin can manage data sources. / Only an agent asks for a data source. An Admin creates one in settings. / Answers come from the people a canvas is shared with. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. / You can view this canvas, but not take part in it. |
 | `grant_recovery_required` | 409 | Review Stripe before retrying grant issuance. |
 | `hold_not_found` | 404 | This operation has no open hold. It may have settled already. |
 | `hold_too_recent` | 409 | Wait until the hold is five minutes old. Its request may still finish. |
 | `idempotency_conflict` | 409 | Use the original request with this idempotency key. / This request ID was used for a different adjustment. |
+| `import_address_refused` | 400 | That address is not a public website. |
+| `import_unreachable` | 502 | We could not reach that site. |
 | `insufficient_credits` | 402 | The account needs more credits before starting this request. |
 | `internal_error` | 500 | Retry with the original idempotency key. / Something went wrong on our side. Read the canvas again with get_canvas and retry. / Something went wrong on our side. Retry the request. |
 | `invalid_answer` | 400 |  |
@@ -65,7 +67,7 @@ Plugin version 0.7.0. A failed tool call returns `isError: true` with JSON text 
 | `invalid_input` | 400 | Use a … name of lowercase letters, digits and hyphens. / Send a Stripe payment ID. / Enter a value for the … header. / Nothing was changed. Give operations: a list of operations, such as […]. / Nothing was changed. Fix every problem below and send the whole patch again. / Open the canvas again before reporting it. / Send the canvas to the object named by its ID. / invited: list at least one email address when mode is invited. / Send at least one tool to publish or to remove. / The input failed validation. issues lists each path and message. |
 | `invalid_json` | 400 | Provide a JSON request body. / Provide a valid JSON request body. |
 | `invalid_key` | 400 | Use state keys of 1 to … characters. |
-| `invalid_message` | 400 | Send layout.move with node, x and y, or layout.tidy with sizes. |
+| `invalid_message` | 400 | Send ink.add with stroke. / Send ink.remove with id. / Send layout.move with node, x and y, or layout.tidy with sizes. / Send layout.measure with heights. / Send layout.resize with node and size, or size null. |
 | `invalid_model` | 400 | The canvas's agent cannot run on "…". Choose a model identifier from Cloudflare AI Gateway. |
 | `invalid_node` | 400 | Use a node ID from this canvas, or leave out nodeId to comment on the whole canvas. |
 | `invalid_origin` | 403 | Use an authorized MCP client. / Open CanvasView to change account settings. / Open the canvas link to join. |
@@ -113,7 +115,7 @@ Plugin version 0.7.0. A failed tool call returns `isError: true` with JSON text 
 | `payment_recovery_required` | 409 | Review the Stripe payment before retrying grant issuance. |
 | `pin_limit` | 409 | This account already keeps … canvases, the most allowed. Unpin one before keeping another. |
 | `prompt_too_long` | 400 | Keep a prompt within … characters. This one has …. |
-| `rate_limit` | 429 | Wait one second before retrying. / Too many data requests. Wait a minute before retrying. / A canvas tests tools at most … times a minute. Wait a moment. / A tool writes shared state at most … times a second. |
+| `rate_limit` | 429 | Wait a minute before importing again. / Wait one second before retrying. / Too many data requests. Wait a minute before retrying. / A canvas tests tools at most … times a minute. Wait a moment. / A tool writes shared state at most … times a second. |
 | `read_only` | 409 | This canvas no longer accepts changes. / This canvas is read-only. Only active canvases accept state changes. |
 | `repository_moved` | 409 | The repository changed while this was being prepared. Try again. |
 | `repository_unavailable` | 503 | This canvas's repository is not available right now. Try again in a moment. |
@@ -123,6 +125,7 @@ Plugin version 0.7.0. A failed tool call returns `isError: true` with JSON text 
 | `sign_in_required` | 401 | Sign in to open this canvas. |
 | `sign_in_unavailable` | 503 | Try again in a moment. |
 | `signup_unavailable` | 503 | Sign-up is not configured yet. |
+| `skill_not_found` | 404 | No skill is named …. Use one of …, or call get_skill with no name to list them. / This organization has not chosen a design for its canvases, so there is no skill to download. |
 | `spend_cap` | 402 | The account has reached its daily spending cap. |
 | `state_conflict` | 409 |  |
 | `state_key_undeclared` | 403 | This tool's manifest does not list … in writes. |
