@@ -2,7 +2,7 @@
 
 # CanvasView kit reference
 
-Plugin version 0.9.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.9.1. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
@@ -28,15 +28,15 @@ A component can have several pages. Declare them on the node as routes: [{ path,
 
 ## Functions
 
-- `fetchData`: Call await fetchData(source, { path, query?, method?, body?, headers? }) for one request, for example a write when someone presses a button. It resolves with { status, ok, contentType, text, data? } whatever status the source answered with, and rejects with an error carrying a code when CanvasView refuses the call. method is GET unless the owner allowed POST, PUT, PATCH or DELETE on the source, which work on active canvases only. A string body is sent as text and anything else as JSON. headers may set Content-Type and Accept only; CanvasView adds the source's secret headers, which a component never sees.
+- `fetchData`: Call await fetchData(source, { path, query?, method?, body?, headers? }) for one request, for example a write when someone presses a button. It resolves with { status, ok, contentType, text, data? } whatever status the source answered with, and rejects with an error carrying a code when CanvasView refuses the call. method is GET unless the owner allowed POST, PUT, PATCH or DELETE on the source, which work on active canvases only. A write needs someone the owner named: a person invited as participant or above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only the link, signed in or not, and anyone invited as a viewer is refused with invite_required or forbidden; reads still work for them. On a public canvas, collect answers or shared state and let the organization's agent act on them. A string body is sent as text and anything else as JSON. headers may set Content-Type and Accept only; CanvasView adds the source's secret headers, which a component never sees.
 
 ## Data sources
 
-The sandbox has no network. A component reaches outside data only through a data source the account owner approved in CanvasView settings: call list_data_sources to see their names, hosts and methods, and request_data_source to ask the owner for a new one. Declare every source a canvas's components call in dataSources: ["orders"] in the spec; create, update, patch and validate_canvas refuse a name the account does not have. Each call goes through CanvasView: path stays under the source's base URL and prefix (no .., no full URLs), at most 256 KB sent and 1 MB received, JSON or text only, 10 seconds, no redirects, and 60 requests a minute per viewer and 600 per canvas. Viewers' cookies, sign-in and address are never sent; a source may receive the verified viewer email on canvases that need sign-in when the owner chose that. Free for now.
+The sandbox has no network. A component reaches outside data only through a data source the account owner approved in CanvasView settings: call list_data_sources to see their names, hosts and methods, and request_data_source to ask the owner for a new one. Declare every source a canvas's components call in dataSources: ["orders"] in the spec; create, update, patch and validate_canvas refuse a name the account does not have. Each call goes through CanvasView: path stays under the source's base URL and prefix (no .., no full URLs), at most 256 KB sent and 1 MB received, JSON or text only, 10 seconds, no redirects, and 60 requests a minute per viewer and 600 per canvas. Viewers' cookies, sign-in and address are never sent. When the owner chose it, a source receives the person's email as X-CanvasView-Viewer with each write, and with reads on canvases that need sign-in. Each write is recorded for the canvas's owner and Admins (get_action_log): who, the source, the method, the path and the status, never the query or the body. Free for now.
 
 ## Canvas tools
 
-A canvas can have tools: code the canvas runs for its components, which can call the organization's approved data sources and write results into shared state. The sandbox still has no network: a call goes from the component to the page and down the canvas's live connection, and the answer comes back the same way. Import canvas and call await canvas.tools.<name>(input), or use the useTool hook, and render ToolUnavailable when a tool cannot run. A tool that feeds everyone (a poll or a stream) writes shared state; read it with useSharedState. People who only view a canvas cannot set a tool off.
+A canvas can have tools: code the canvas runs for its components, which can call the organization's approved data sources and write results into shared state. The sandbox still has no network: a call goes from the component to the page and down the canvas's live connection, and the answer comes back the same way. Import canvas and call await canvas.tools.<name>(input), or use the useTool hook, and render ToolUnavailable when a tool cannot run. A tool that feeds everyone (a poll or a stream) writes shared state; read it with useSharedState. A tool acts with the organization's credentials, so only someone the owner named may call it: a person invited as participant or above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only the link, signed in or not, and people who only view, cannot set a tool off.
 
 ## Shared state
 
@@ -425,7 +425,7 @@ Example data:
 
 ### canvas
 
-The canvas a component runs on. await canvas.tools.<name>(input) calls one of the canvas's tools and resolves with its output. It rejects with an Error whose reason is tool_unavailable (the canvas has no tool of that name, or cannot run it now), tool_failed, tool_timeout (no answer within 30 seconds), invalid_tool_input, read_only (the person only views the canvas, or the canvas is closed), offline or rate_limit (more than 10 calls a second, or 8 at once, from one page). A name the canvas does not have rejects at once. Catch the rejection and show ToolUnavailable, or use useTool, which never rejects.
+The canvas a component runs on. await canvas.tools.<name>(input) calls one of the canvas's tools and resolves with its output. It rejects with an Error whose reason is tool_unavailable (the canvas has no tool of that name, or cannot run it now), tool_failed, tool_timeout (no answer within 30 seconds), invalid_tool_input, read_only (the person only views the canvas, or the canvas is closed), invite_required (the person has only the link: ask the owner to invite them), offline or rate_limit (more than 10 calls a second, or 8 at once, from one page). A name the canvas does not have rejects at once. Catch the rejection and show ToolUnavailable, or use useTool, which never rejects.
 
 | Member | Type | Required | Description |
 | --- | --- | --- | --- |

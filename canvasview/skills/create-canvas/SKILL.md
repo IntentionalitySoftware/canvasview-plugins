@@ -122,8 +122,8 @@ The result has `id`, `url`, `version` and `unitsLeft` (included updates left).
 
 ## 5. Send the link
 
-Give the person the `url` with one sentence on what you need from them and by when. Then
-follow the work-with-people skill to wait for the answer.
+Give the person the `url` with one sentence on what you need from them and by when. Then follow the work-with-people skill to wait for the answer.
+A canvas shared by link is view only: when people who are not invited should answer, vote or comment, send `access.linkRole: "participant"`.
 
 ## Start from an example, and validate first
 

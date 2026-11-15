@@ -76,7 +76,8 @@ canvas, say so, summarise it instead, and tell CanvasView with `send_feedback`.
 - **Keep state in shared state**, not in React state: a frame can reload.
 - **Follow the organization's design.** Call `get_skill` with name `design-system` before
   writing a component. Use the kit's classes, not colours or fonts written by hand.
-- **Tell the person what you need and by when** when you send the link.
+- **Tell the person what you need and by when** when you send the link. A link is view only
+  unless `access.linkRole` is `"participant"`; set it when people with the link should respond.
 
 ## What a canvas cannot do
 

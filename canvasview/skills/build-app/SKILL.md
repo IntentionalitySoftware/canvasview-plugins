@@ -45,9 +45,17 @@ Declare each source the canvas uses, `"dataSources": ["orders"]`, or the write f
 `list_notifications` (read-only) tells you whether it is still waiting, or that a source a canvas
 declares was removed.
 
-A canvas that declares a data source needs sign-in by default, because anyone who can open it can call
+A canvas that declares a data source needs sign-in by default, because anyone who can open it can read
 the source through CanvasView. Tell the person their viewers will sign in, and set `access` to `link`
 only when they ask for an open link.
+
+Writes (POST, PUT, PATCH, DELETE) need someone the owner named: a person invited as participant or
+above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only
+the link, signed in or not, and anyone invited as a viewer, can read and is refused a write with
+`invite_required` or `forbidden`. A button that writes is for invited people. On a public canvas,
+collect answers or shared state instead, and act on them yourself or with a tool. Each write is
+recorded for the canvas's owner and Admins with who sent it, the source, the method, the path and the
+status (`get_action_log`); never the query or the body.
 
 ```tsx
 import { DataTable, fetchData, useData } from "@canvasview/kit";
@@ -62,7 +70,7 @@ export default function Orders() {
 
 Paths stay under the source's base URL and prefix. Limits: 256 KB sent, 1 MB received, JSON or
 text only, 10 seconds, no redirects, 60 requests a minute per viewer. A refused call has an error
-code such as `data_source_not_declared`, `invalid_data_path` or `rate_limit`.
+code such as `data_source_not_declared`, `invalid_data_path`, `invite_required` or `rate_limit`.
 
 ## npm packages
 

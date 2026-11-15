@@ -2,7 +2,7 @@
 
 # CanvasView error codes
 
-Plugin version 0.9.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.9.1. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
@@ -22,6 +22,7 @@ Plugin version 0.9.0. A failed tool call returns `isError: true` with JSON text 
 | `canvas_limit` | 409 | This account has … active canvases, the most allowed. Delete some with delete_canvas or let them expire before creating another. |
 | `canvas_locked` | 409 | … is editing this canvas. Try again in … seconds, or once they finish. |
 | `canvas_not_found` | 404 | Use a canvas belonging to this account. / Check the link with the person who shared it. / This canvas is no longer available. |
+| `clerk_event_too_large` | 413 | Send a Clerk event below 256 KB. |
 | `comment_limit` | 409 | A canvas holds at most … comments. |
 | `comment_not_found` | 404 | Reply to a comment from list_comments on this canvas. |
 | `comment_too_long` | 400 | Keep comments within … characters. |
@@ -80,6 +81,7 @@ Plugin version 0.9.0. A failed tool call returns `isError: true` with JSON text 
 | `invalid_template` | 400 | Fix the template placeholders. … / With the canvas data removed, these paths fail validation. Bind each to a parameter (with a default when it needs one): …. / The template does not make a valid canvas with sample parameter values (each default, or an empty value of its type; a required string is its name). … / Fix the template access. … |
 | `invalid_tool_input` | 400 | The input does not fit …'s input schema. … |
 | `invalid_value` | 400 | Use JSON values: null, booleans, numbers, strings, arrays, or objects. |
+| `invite_required` | 403 | Ask the owner to invite you. Only people they invited and members of the organization can do this. |
 | `key_limit` | 409 | Revoke an unused key before creating another. / A canvas holds at most … state keys. |
 | `key_not_found` | 404 | Select a key you manage. / Select a disconnected agent. / Select an active key. |
 | `lock_not_held` | 409 | You no longer hold the editing lock. Acquire it again before changing the canvas. |
@@ -105,9 +107,11 @@ Plugin version 0.9.0. A failed tool call returns `isError: true` with JSON text 
 | `package_denied` | 400 | CanvasView blocks this package. Remove it. |
 | `package_dependency_missing` | 400 | A package needs another package it does not bundle, such as a peer dependency. Add it to packages. |
 | `package_deprecated` | 400 | The version is deprecated on the npm registry. Use a version that is not deprecated. |
+| `package_import_invalid` | 400 | An import names a path the package builder would read as another file or package. Import the package name, or a plain path inside it. |
 | `package_malware` | 400 | The version has a malware advisory in OSV. Remove the package. |
 | `package_not_found` | 404, 400 | This package is no longer stored. Ask the agent to update the canvas. / The package or its exact version is not on the npm registry. Check the name, or use a published version. |
 | `package_refused` | 400 | Several packages were refused for different reasons. issues lists each one. |
+| `package_request_too_large` | 400 | The packages in one request pull in more than 16 MB of code together. Send components that use packages in separate requests, or import smaller entry points. |
 | `package_too_large` | 400 | The package pulls in more than 5 MB of code. Import a smaller entry point or use a smaller package. |
 | `package_too_recent` | 400 | The version was published less than 3 days ago. Use an older version; the message suggests one. |
 | `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Keep the template spec below 1 MB. / Reduce the template's canvas below 1 MB with sample values. / Keep a tool's input within 64 KB. / Reduce the request size. |
@@ -118,6 +122,7 @@ Plugin version 0.9.0. A failed tool call returns `isError: true` with JSON text 
 | `rate_limit` | 429 | Wait a minute before importing again. / Wait one second before retrying. / Too many data requests. Wait a minute before retrying. / A canvas tests tools at most … times a minute. Wait a moment. / A tool writes shared state at most … times a second. |
 | `read_only` | 409 | This canvas no longer accepts changes. / This canvas is read-only. Only active canvases accept state changes. |
 | `repository_moved` | 409 | The repository changed while this was being prepared. Try again. |
+| `repository_too_large` | 413 | This canvas's repository is larger than the canvas opens (… MB, … files). Remove what is not the canvas or its tools in a commit from your own clone (repository.token gives one), then pull again: the canvas's own versions are committed after it. |
 | `repository_unavailable` | 503 | This canvas's repository is not available right now. Try again in a moment. |
 | `request_in_flight` | 409 | Wait for the current paid request or retry it with its original key. |
 | `review_conflict` | 409 | Reload the application to see its latest review. / This request changed after it was opened. Reload it and decide again. |

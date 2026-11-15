@@ -35,6 +35,14 @@ Set `access` on `create_canvas`, or change it later with `set_canvas_access` (fr
 
 - Whatever the mode, the canvas owner and Admins of its organization can open it, and so can every
   member when its visibility is `organization`. People who leave the organization lose that at once.
+- **A link is view only unless you say otherwise.** Someone with only the link (signed in or not)
+  can look, and cannot answer, vote or comment, until `access.linkRole` is `"participant"`. Set it
+  when people who are not invited should respond: `{ "mode": "link", "linkRole": "participant" }`.
+- An entry of `invited` may carry a role: `viewer` (View), `participant` (Respond, the default),
+  `editor` (Edit) or `admin` (Admin), as `{ "email": "...", "role": "viewer" }`. Edit and Admin are
+  for members of the organization: anyone else stands as Respond until they join. The answer's
+  `who` says who can do what; read it before telling the person.
+- Buttons that change the organization's data, and tools, work only for invited people and members.
 - With `invited`, each newly added address gets one invitation email with the title and link;
   the result's `notified` says whether it was sent. Do not resend the same list to "remind" people.
 - Tightening access disconnects viewers who no longer qualify.

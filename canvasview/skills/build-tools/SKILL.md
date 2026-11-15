@@ -61,7 +61,7 @@ the last page leaves or all have been silent for five minutes, and start again w
   `writes`. Without a contract the key must start `tools.<name>.`; with one, the contract must
   declare it. JSON up to 64 KB, 20 writes a second. It throws when refused.
 - **Limits**: 20 tools a canvas; 10 seconds a call (or `timeoutMs`); 5 seconds of CPU; 8 calls in flight
-  per canvas. People who only view a canvas, and anyone on a closed canvas, cannot set a tool off.
+  per canvas, on active canvases only. Agents and people the owner named (invited as participant or above, or members) call tools; anyone with only the link gets `invite_required`, so on a public canvas collect answers and call the tool yourself. A person's call, and each write the tool makes during it, is recorded for that person in `get_action_log`.
 
 ## Work in this order
 
@@ -137,7 +137,7 @@ export default function QuoteCard({ data }: { data: { symbol: string } }) {
   Common codes: `"manifest_invalid"`, `"tool_class_missing"`, `"source_not_approved"`,
   `"tool_load_failed"`, `"case_unrecorded_request"`, `"case_output_invalid"`, `"case_expectation_failed"`.
 - **A call** fails with `tool_unavailable`, `"tool_failed"`, `tool_timeout`, `invalid_tool_input`, or
-  in a component also `read_only`, `offline` or `rate_limit`; `call_tool` adds `tool_not_found` and `tool_busy`.
+  in a component also `read_only`, `invite_required`, `offline` or `rate_limit`; `call_tool` adds `tool_not_found` and `tool_busy`.
 - **Health**: a tool that fails its first 3 calls after going live, or more than half of its last
   20, is marked failing: the canvas goes back to the last commit whose tools worked, or the tool
   answers `tool_unavailable`. `get_tool_log` shows each call's outcome and each tool's `reason`.
