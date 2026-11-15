@@ -2,11 +2,11 @@
 
 # CanvasView kit reference
 
-Plugin version 0.9.1. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.10.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
-Use kind: component, source: TSX, and data: an object. Export a default component that accepts { data, theme, size }. theme is "light" or "dark" and follows the viewer. Use static imports from react, @canvasview/kit and the npm packages the node declares in packages. Give the node title (1 to 120 characters) to name it on the canvas and on its tab, such as "Budget model"; without one it is labelled Made by an agent. Never build a sign-in screen or a field that asks for a password, API key, card number or other secret; reach outside services through an owner-approved data source. Style with Tailwind classes in className, a <style> element or the style prop. Tailwind is compiled when the canvas is saved, so write each class name in full rather than building it from parts. The kit's colours are bg-background, bg-surface, text-foreground, text-muted, border-border, bg-accent and text-accent-foreground, and bg-brand-1 to bg-brand-6 (also text- and border-) for the organization's brand colours, which are the chart series colours until it sets them; they and the dark: variant follow the viewer's theme. The sandbox has no network, so stylesheets, fonts and images from URLs never load.
+Use kind: component, source: TSX, and data: an object. Export a default component that accepts { data, theme, size }. theme is "light" or "dark" and follows the viewer. Use static imports from react, @canvasview/kit and the npm packages the node declares in packages. Give the node title (1 to 120 characters) to name it on the canvas and on its tab, such as "Budget model"; without one it is labeled Made by an agent. Never build a sign-in screen or a field that asks for a password, API key, card number or other secret; reach outside services through an owner-approved data source. Style with Tailwind classes in className, a <style> element or the style prop. Tailwind is compiled when the canvas is saved, so write each class name in full rather than building it from parts. The kit's colors are bg-background, bg-surface, text-foreground, text-muted, border-border, bg-accent and text-accent-foreground, and bg-brand-1 to bg-brand-6 (also text- and border-) for the organization's brand colors, which are the chart series colors until it sets them; they and the dark: variant follow the viewer's theme. The sandbox has no network, so stylesheets, fonts and images from URLs never load.
 
 Before writing a component, call search_components (GET /api/components?query=) and reuse a match with kind: component, ref: its name, and data; get_component returns source to fork. Save anything reusable with save_component (PUT /api/components/:name). Saved components are private to this account.
 
@@ -16,15 +16,23 @@ A widget node renders the kit export named by its widget field, with data as the
 
 A component can have several pages. Declare them on the node as routes: [{ path, title }], 1 to 20, such as [{ path: "/", title: "Revenue" }, { path: "/customers", title: "Customers" }]. A path is / or lowercase words with hyphens, such as /reports/monthly, at most 120 characters, with no parameters; a title is 1 to 60 characters and names the page in CanvasView's menus. The component opens on the first route. Read the open page with useRoute and render it; link between pages with RouteLink. A person can open the node on its own, full window, at /c/<canvas>/<node>, and on one page at /c/<canvas>/<node>/<path>, where the address follows the page and Back works. update_node routes replaces them in a patch and routes: null removes them. validate_canvas reports a problem at nodes[i].routes[j].path. Example: const { path } = useRoute(); return <><nav><RouteLink to="/">Revenue</RouteLink> <RouteLink to="/customers">Customers</RouteLink></nav>{path === "/customers" ? <Customers /> : <Revenue />}</>;
 
+## Opening other components
+
+A component can open other components on the canvas, for everyone, such as an inbox that opens an email beside it. Declare what a component node can open in its opens: { <type>: { ref, key, access?, opens? } }, at most 10 types. type is a short name the component opens by, such as email. ref names a saved component (save_component first); its source is copied into the declaration when the canvas is saved, so later changes to the saved component or deleting it leave the canvas as it is, and get_canvas returns it as source beside ref. Send ref alone to take the saved component's current source. key names the field of the input that identifies each instance, such as emailId: one instance per key per parent, so opening the same email again focuses the one that is there, gives it the new input as its data, and restores it if it was minimized or closed. Anyone who can open the canvas may open, minimize, restore and close these, people with only the link included; access: "named" keeps that to people the owner named (invited as participant or above, members, the owner, Admins). Removing one always needs someone the owner named. opens inside a declaration is what the opened component can open in turn, 3 levels deep. In the component, call useOpen(type) or await canvas.open(type, input); input becomes the opened component's data. useOpened(type) lists the component's own instances with their status, live. canvas.remove(type, key) takes one off the canvas and erases it. Inside the opened component, useInstance() gives its key and its parent. Shared state is scoped by the same relationship: inside an opened component useSharedState keys are that instance's own, useFamilyState keys are shared with the core node it descends from and every instance of that node, and the parent reads a key of each of its instances with useOpenedState(type, key); a core node's plain useSharedState stays canvas-wide. Closing an instance keeps its keys, removing one erases them (and those of what it opened), so opening its key again starts empty. A component can open only the types its node declares; anything else is refused at once. Opening is free and never a new version. An instance is drawn beside its parent in the same frame as a node, with its type and key on its tab, can be dragged, and opens on its own page at /c/<canvas>/<instance id>. Example node: { id: "inbox", kind: "component", ref: "inbox-list", data: { emails }, opens: { email: { ref: "email-reader", key: "emailId" } } }.
+
 ## Hooks
 
 - `useDraft`: Call useDraft() to get draft(answer). This fills the CanvasView answer panel with the fields answer names; fields drafted earlier stay. Input blocks with a field prop draft for you.
 - `useSubmit`: Call useSubmit() to get submit(answer). This requests human confirmation in CanvasView.
-- `useSharedState`: Call useSharedState(key, initial) to get [value, setValue, { error, loaded }], like useState. The value is synced live to everyone on this canvas and survives reloads. Components that use the same key share the value. Values are JSON. setValue accepts a value or an updater. Last write wins per key. loaded is false until the page has the canvas's state; until then value is initial whether or not the key is set, so never seed a default before it: write in an effect only once loaded is true and the value is still unset, and list loaded in the effect's dependencies. Limits: 1,000 keys of 1 to 120 characters, 64 KB per value, 1 MB per canvas, 20 writes per second per viewer. A rejected write reverts and sets error to a reason code (key_limit or state_too_large when the canvas is full; read_only for someone who only views the canvas, or once it is closed; on a canvas with a contract, undeclared_key, schema_mismatch or not_a_writer). Keep anything a component must remember in shared state, not React state; a frame may reload.
+- `useSharedState`: Call useSharedState(key, initial) to get [value, setValue, { error, loaded }], like useState. The value is synced live to everyone on this canvas and survives reloads. Components that use the same key share the value. Inside a component something opened (an instance, see opens) the key is that instance's own: ten emails opened from one inbox each keep their own draft under the same name; use useFamilyState to share with the parent, and useCanvasState for a canvas-wide key. Values are JSON. setValue accepts a value or an updater. Last write wins per key. loaded is false until the page has the canvas's state; until then value is initial whether or not the key is set, so never seed a default before it: write in an effect only once loaded is true and the value is still unset, and list loaded in the effect's dependencies. Limits: 1,000 keys of 1 to 120 characters, 64 KB per value, 1 MB per canvas, 20 writes per second per viewer. A rejected write reverts and sets error to a reason code (key_limit or state_too_large when the canvas is full; read_only for someone who only views the canvas, or once it is closed; on a canvas with a contract, undeclared_key, schema_mismatch or not_a_writer; scope_not_found once the instance was removed). Keep anything a component must remember in shared state, not React state; a frame may reload.
+- `useFamilyState`: Call useFamilyState(key, initial) to get [value, setValue, { error, loaded }], as useSharedState gives, for a key shared by a core node's component and every instance descending from it (its family): which email an inbox has selected, read and written by the inbox and by each email. Two inboxes on one canvas are two families and never share it. Removing the node from the spec erases its family's keys; closing or removing an instance does not. get_canvas_state lists it as ["family","<node id>","<key>"].
+- `useCanvasState`: Call useCanvasState(key, initial) to get [value, setValue, { error, loaded }] for a canvas-wide key from anywhere, inside an instance too: what useSharedState is in a core node's component.
+- `useOpenedState`: Call useOpenedState(type, key) in a component that opens things to read one useSharedState key of each of its own instances of that type, live, as { <instance key>: value } for the instances that hold it, such as each open email's draft. It is read only: an instance writes its own keys. A removed instance's keys are erased, so a key opened again starts empty; a closed one keeps them.
 - `useSharedGroup`: Call useSharedGroup(prefix) to get [entries, set, { error, me, loaded }] for values that several people write at once. entries maps each key <prefix>:<suffix> to its value as { suffix: value }, live; set(suffix, value) writes <prefix>:<suffix>, and null clears it (the key stays, as null). me is this viewer's participant id, so set(me, value) keeps one value per person that nobody else overwrites. loaded is false until the page has the canvas's state; until then empty entries may only be unread, so wait for it before writing a starting entry. Group writes are accepted while someone else uses the component. A participant id is a hash of a signed-in viewer or, on link canvases, a random id kept in the browser, so one person can take part again from another browser. Poll, RankedVote and Board are built on it.
 - `useGroupMode`: Call useGroupMode() in a component that several people use at once. Its frame then shows no "someone is using this" lock, asks for no control, and sends all its writes without one-person control. Poll, RankedVote and Board call it for you.
 - `useData`: Call useData(source, { path, query?, method?, body?, headers? }) to get { data, response, error, loading, refresh } from an owner-approved data source (list_data_sources). It reads when the component mounts and again when source or the request change. data is the parsed body when the source answers with JSON; response has status, ok, contentType and text. error has a code: data_status when the source answered with a status other than 2xx, otherwise why CanvasView refused or could not reach it. The canvas must list the source in dataSources. Use fetchData for writes.
 - `useRoute`: Call useRoute() to get { path, navigate } in a component that declares routes. path is the open page, one of the node's declared paths; it starts on the first, or on the page the address names. navigate(path) opens another; a path the node does not declare is ignored. The page is each viewer's own, like a browser tab: keep it in useSharedState instead when everyone should move together. Render the page for path yourself, and link between pages with RouteLink.
+- `useInstance`: Call useInstance() in a component that something opened (see opens) to get { id, type, key, parent, node }: key is the value it was opened by, as a string, such as the email's id; parent is { kind: "node" | "instance", id } for what opened it; node is the core node it descends from. It returns null in a component that is a node of the canvas itself. The input it was opened with is its data prop.
 
 ## Functions
 
@@ -40,7 +48,7 @@ A canvas can have tools: code the canvas runs for its components, which can call
 
 ## Shared state
 
-Read shared state with get_canvas_state (GET /api/canvases/:id/state). Write up to 20 keys with set_canvas_state (PUT /api/canvases/:id/state with { values }). Agent writes appear live in open browsers and are attributed to the API key name. update_canvas keeps state.
+Read shared state with get_canvas_state (GET /api/canvases/:id/state). Write up to 20 keys with set_canvas_state (PUT /api/canvases/:id/state with { values }). Agent writes appear live in open browsers and are attributed to the API key name. update_canvas keeps state. Keys a family or an instance holds (useFamilyState, and useSharedState inside an opened component) are listed under their stored form, ["family","<node id>","<name>"] or ["instance","<instance id>","<name>"], with their scope beside them; write them under that same form. They count toward the canvas's 1,000 keys and 1 MB like any key.
 
 ## Layout and views
 
@@ -68,6 +76,8 @@ Nodes are placed automatically: flow (top to bottom along edges) when the canvas
 - [`StatusList`](#statuslist) (widget `status-list@1`)
 - [`RouteLink`](#routelink)
 - [`canvas`](#canvas) (object)
+- [`useOpen`](#useopen) (hook)
+- [`useOpened`](#useopened) (hook)
 - [`useTool`](#usetool) (hook)
 - [`ToolUnavailable`](#toolunavailable)
 
@@ -89,7 +99,7 @@ Example data:
 
 ### RecordDetail
 
-One record as labelled fields, each with an optional source and as-of time, under optional status badges. Use facts for a quick map, or fields for detail.
+One record as labeled fields, each with an optional source and as-of time, under optional status badges. Use facts for a quick map, or fields for detail.
 
 Widget node: `{ "kind": "widget", "widget": "facts@1", "data": { ... } }`. Also exported as `Facts`.
 
@@ -130,7 +140,7 @@ Example data:
 
 ### Timeline
 
-Dated events with an optional detail and status. Status is shown by a symbol and colour.
+Dated events with an optional detail and status. Status is shown by a symbol and color.
 
 Widget node: `{ "kind": "widget", "widget": "timeline@1", "data": { ... } }`.
 
@@ -177,7 +187,7 @@ Widget node: `{ "kind": "widget", "widget": "chart@1", "data": { ... } }`.
 | `labels` | string[] | no | Category labels along the x axis, with series. |
 | `xLabel` | string | no | The x axis title. |
 | `yLabel` | string | no | The y axis title. |
-| `emphasis` | { label: string } \| { series: string } | no | Draw one label's marks, or one series, in full and let the rest recede. Give label (one of the labels) or series (a series name), not both. A chart of one series inks the picked bar and greys the others. |
+| `emphasis` | { label: string } \| { series: string } | no | Draw one label's marks, or one series, in full and let the rest recede. Give label (one of the labels) or series (a series name), not both. A chart of one series inks the picked bar and grays the others. |
 
 Example data:
 
@@ -187,7 +197,7 @@ Example data:
 
 ### Comparison
 
-Two to four options side by side across named criteria. A recommended option is labelled.
+Two to four options side by side across named criteria. A recommended option is labeled.
 
 Widget node: `{ "kind": "widget", "widget": "comparison@1", "data": { ... } }`.
 
@@ -243,7 +253,7 @@ Example data:
 
 ### SchemaForm
 
-Labelled fields generated from a small JSON schema, with help text, required markers and inline validation. A label alone gives one text field.
+Labeled fields generated from a small JSON schema, with help text, required markers and inline validation. A label alone gives one text field.
 
 Widget node: `{ "kind": "widget", "widget": "form@1", "data": { ... } }`. Also exported as `Form`.
 
@@ -299,7 +309,7 @@ Example data:
 
 ### Calculator
 
-Labelled number inputs and outputs computed from formulas as the inputs change. An output that cannot be computed, such as a division by zero, shows a dash.
+Labeled number inputs and outputs computed from formulas as the inputs change. An output that cannot be computed, such as a division by zero, shows a dash.
 
 Widget node: `{ "kind": "widget", "widget": "calculator@1", "data": { ... } }`.
 
@@ -318,7 +328,7 @@ Example data:
 
 ### Poll
 
-One question that several people vote on at once: one vote each, changeable until voting closes. Shows counts as labelled bars and, when people gave names, who voted. Several people use it at once with no one-person control, also inside an agent component. Results update live for everyone.
+One question that several people vote on at once: one vote each, changeable until voting closes. Shows counts as labeled bars and, when people gave names, who voted. Several people use it at once with no one-person control, also inside an agent component. Results update live for everyone.
 
 Widget node: `{ "kind": "widget", "widget": "poll@1", "data": { ... } }`.
 
@@ -425,11 +435,13 @@ Example data:
 
 ### canvas
 
-The canvas a component runs on. await canvas.tools.<name>(input) calls one of the canvas's tools and resolves with its output. It rejects with an Error whose reason is tool_unavailable (the canvas has no tool of that name, or cannot run it now), tool_failed, tool_timeout (no answer within 30 seconds), invalid_tool_input, read_only (the person only views the canvas, or the canvas is closed), invite_required (the person has only the link: ask the owner to invite them), offline or rate_limit (more than 10 calls a second, or 8 at once, from one page). A name the canvas does not have rejects at once. Catch the rejection and show ToolUnavailable, or use useTool, which never rejects.
+The canvas a component runs on. await canvas.tools.<name>(input) calls one of the canvas's tools and resolves with its output. It rejects with an Error whose reason is tool_unavailable (the canvas has no tool of that name, or cannot run it now), tool_failed, tool_timeout (no answer within 30 seconds), invalid_tool_input, read_only (the person only views the canvas, or the canvas is closed), invite_required (the person has only the link: ask the owner to invite them), offline or rate_limit (more than 10 calls a second, or 8 at once, from one page). A name the canvas does not have rejects at once. Catch the rejection and show ToolUnavailable, or use useTool, which never rejects. canvas.open and canvas.remove open and remove other components on the canvas (see opens).
 
 | Member | Type | Required | Description |
 | --- | --- | --- | --- |
 | `tools` | Record<string, (input?: object) => Promise<output>> | yes | One function per tool, by the tool's name. input is a JSON object that fits the tool's input schema, up to 64 KB; default {}. The output fits the tool's output schema. |
+| `open` | (type: string, input: object) => Promise<{ id, type, key, status }> | yes | Opens one of the types the node declares in opens, beside it, for everyone. input becomes the opened component's data and must hold the declaration's key field. Opening a key that is already there gives back that instance with input as its new data, restored if it was minimized or closed. Rejects with an Error whose reason is open_unavailable (the node does not declare the type, or nothing can be opened here), invalid_key (the input lacks the declaration's key field: a string of 1 to 200 characters or a number), data_too_large (more than 16 KB of input), instance_limit (200 instances on a canvas, or 50 under one parent), not_found, read_only (the person only views the canvas, or it is closed), invite_required (the person has only the link, and the declaration says access named, or it is a removal), open_timeout, open_failed, offline or rate_limit. |
+| `remove` | (type: string, key: string \| number) => Promise<void> | yes | Removes one of this component's own instances of a type, by its key, for someone the owner named (invite_required for anyone else), with everything it opened and its state, for everyone. For example when an email is deleted from the inbox's list. Rejects with the same reasons as open; not_found when it is not there. |
 
 Example:
 
@@ -441,6 +453,44 @@ try {
 } catch (error) {
   // error.reason is a code such as tool_unavailable
 }
+```
+
+### useOpen
+
+Call useOpen(type) to get { open, pending, error, available } for a type the node declares in opens, in the shape of useTool. open(input) opens it beside this component, or focuses and restores the one already open for that key, and resolves with { id, type, key, status }, or with undefined after setting error; it never rejects. available is false when the node does not declare the type, or this person may not open it now: render ToolUnavailable in its place, or pass it error.
+
+| Argument | Type | Required | Description |
+| --- | --- | --- | --- |
+| `type` | string | yes | A type the node declares in opens, such as email. |
+
+Example:
+
+```tsx
+import { ToolUnavailable, useOpen } from "@canvasview/kit";
+
+const { open, pending, error, available } = useOpen("email");
+if (!available) return <ToolUnavailable what="Emails" />;
+return <>
+  <button disabled={pending} onClick={() => open({ emailId: email.id, subject: email.subject })}>{email.subject}</button>
+  {error && <ToolUnavailable what="Email" error={error} />}
+</>;
+```
+
+### useOpened
+
+Call useOpened(type) to get this component's own instances of a type, each { id, type, key, status }, where status is open, minimized or closed, in the order they were opened. It is live: it changes as anyone opens, minimizes, closes or removes them, so an inbox can mark which emails are open. A closed instance stays in the list until it is removed.
+
+| Argument | Type | Required | Description |
+| --- | --- | --- | --- |
+| `type` | string | yes | A type the node declares in opens. |
+
+Example:
+
+```tsx
+import { useOpened } from "@canvasview/kit";
+
+const opened = useOpened("email");
+const isOpen = (id) => opened.some((each) => each.key === String(id) && each.status === "open");
 ```
 
 ### useTool

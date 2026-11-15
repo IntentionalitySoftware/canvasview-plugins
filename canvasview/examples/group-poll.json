@@ -1,5 +1,5 @@
 {
-  "description": "A team votes live on one question, one vote each; the organiser closes voting and submits the result.",
+  "description": "A team votes live on one question, one vote each; the organizer closes voting and submits the result.",
   "input": {
     "idempotencyKey": "example-group-poll-replace-me",
     "title": "Team offsite location",
@@ -9,7 +9,7 @@
         "id": "context",
         "kind": "widget",
         "widget": "note@1",
-        "data": { "markdown": "Vote by **Friday 17:00**. You can change your vote until voting closes. The organiser then submits the result." }
+        "data": { "markdown": "Vote by **Friday 17:00**. You can change your vote until voting closes. The organizer then submits the result." }
       },
       {
         "id": "options",

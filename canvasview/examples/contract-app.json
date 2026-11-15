@@ -59,7 +59,7 @@
     "contract": {
       "state": {
         "model.inputs": {
-          "description": "The loan people are modelling.",
+          "description": "The loan people are modeling.",
           "schema": {
             "type": "object",
             "properties": {

@@ -1,0 +1,70 @@
+{
+  "description": "An inbox that opens each email beside it in a saved email reader, for everyone. Save the components it lists with save_component first.",
+  "components": [
+    {
+      "name": "email-reader",
+      "description": "One email opened from an inbox: subject, sender, time and body.",
+      "source": "import { Note } from \"@canvasview/kit\";\n\ntype Data = { emailId: string; from: string; subject: string; received: string; body: string };\n\n// One email, opened from an inbox: the open input is its data.\nexport default function EmailReader({ data }: { data: Data }) {\n  return (\n    <article style={{ display: \"grid\", gap: 8, padding: 12 }}>\n      <h2 style={{ margin: 0 }}>{data.subject}</h2>\n      <p style={{ margin: 0 }}>From {data.from}, {data.received}</p>\n      <Note markdown={data.body} />\n    </article>\n  );\n}\n",
+      "exampleData": {
+        "emailId": "m-101",
+        "from": "Dana Ortiz",
+        "subject": "Contract renewal terms",
+        "received": "Mon 09:12",
+        "body": "The renewal keeps the current price for a year if we sign by the 30th. Legal wants the termination clause reworded."
+      }
+    }
+  ],
+  "input": {
+    "idempotencyKey": "example-inbox-replace-me",
+    "title": "Team inbox",
+    "nodes": [
+      {
+        "id": "inbox",
+        "kind": "component",
+        "title": "Inbox",
+        "size": {
+          "width": 420,
+          "height": 360
+        },
+        "data": {
+          "emails": [
+            {
+              "emailId": "m-101",
+              "from": "Dana Ortiz",
+              "subject": "Contract renewal terms",
+              "received": "Mon 09:12",
+              "body": "The renewal keeps the current price for a year if we sign by the 30th. Legal wants the termination clause reworded."
+            },
+            {
+              "emailId": "m-102",
+              "from": "Lee Park",
+              "subject": "Q3 numbers are in",
+              "received": "Mon 11:40",
+              "body": "Revenue is up 8% on Q2. Churn held at 2.1%. The board pack goes out Thursday."
+            },
+            {
+              "emailId": "m-103",
+              "from": "Sam Reyes",
+              "subject": "Offsite dates",
+              "received": "Tue 08:05",
+              "body": "Two options: the 14th to 15th or the 21st to 22nd. Reply with the one that works."
+            }
+          ]
+        },
+        "opens": {
+          "email": {
+            "ref": "email-reader",
+            "key": "emailId"
+          }
+        },
+        "source": "import { useState } from \"react\";\nimport { canvas, useSharedState } from \"@canvasview/kit\";\n\ntype Email = { emailId: string; from: string; subject: string; received: string; body: string };\ntype Data = { emails: Email[] };\n\n// Opens each email beside the inbox, for everyone, as the node's opens declares: canvas.open(\"email\", email) opens\n// the saved email-reader with the email as its data. The same emailId again brings back the one already open.\nexport default function Inbox({ data }: { data: Data }) {\n  const [archived, setArchived, { error }] = useSharedState<string[]>(\"inbox.archived\", []);\n  // Only this viewer's: why their own open failed.\n  const [failed, setFailed] = useState<string | null>(null);\n  const emails = data.emails.filter((email) => !archived.includes(email.emailId));\n\n  function open(email: Email) {\n    canvas.open(\"email\", email).then(() => setFailed(null), (reason: { reason?: string }) => setFailed(reason.reason ?? \"unavailable\"));\n  }\n  // Archiving takes the email off the list, and its reader off the canvas: canvas.remove removes this inbox's own instance.\n  function archive(email: Email) {\n    setArchived((current) => [...current, email.emailId]);\n    canvas.remove(\"email\", email.emailId).catch(() => undefined);\n  }\n\n  return (\n    <div style={{ display: \"grid\", gap: 8, padding: 12 }}>\n      {failed ? <p role=\"alert\">Could not open that email ({failed}).</p> : null}\n      {error ? <p role=\"alert\">Could not archive ({error}).</p> : null}\n      <ul style={{ listStyle: \"none\", margin: 0, padding: 0, display: \"grid\", gap: 4 }}>\n        {emails.map((email) => (\n          <li key={email.emailId} style={{ display: \"flex\", gap: 8, alignItems: \"baseline\" }}>\n            <button type=\"button\" onClick={() => open(email)} style={{ flex: 1, textAlign: \"start\" }}>\n              <strong>{email.from}</strong> {email.subject} <small>{email.received}</small>\n            </button>\n            <button type=\"button\" onClick={() => archive(email)} aria-label={`Archive ${email.subject}`}>Archive</button>\n          </li>\n        ))}\n      </ul>\n      {emails.length ? null : <p>Nothing left in the inbox.</p>}\n    </div>\n  );\n}\n"
+      }
+    ],
+    "access": {
+      "mode": "invited",
+      "invited": [
+        "dana@example.com"
+      ]
+    }
+  }
+}

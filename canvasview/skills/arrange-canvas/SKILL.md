@@ -33,8 +33,8 @@ Pass the canvas `id` and any of these. They apply in this order: `sizes`, `layou
 - `positions`: `{ "<node id>": { "x": 0, "y": 0 } }`, the top-left corner of each node.
 - `sizes`: `{ "<node id>": { "width": 640, "height": 360 } }`. Fixes the size: taller content
   scrolls inside it. Use it only when someone asks for a node of a set size; people can also drag a node's corner.
-- `align`: `left`, `right`, `top`, `bottom`, `center-horizontal` (one shared centre x) or
-  `center-vertical` (one shared centre y).
+- `align`: `left`, `right`, `top`, `bottom`, `center-horizontal` (one shared center x) or
+  `center-vertical` (one shared center y).
 - `distribute`: `horizontal` or `vertical`, with gaps of `spacing` or shared evenly.
 
 The result is the final layout of every node (`x`, `y`, `width`, `height`), plus `panes` and `view`.

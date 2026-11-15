@@ -1,6 +1,6 @@
 ---
 name: build-app
-description: Build a complete app on a CanvasView canvas from several custom components that share state, and give components live data from an outside service through an owner-approved data source. Covers the app contract, the build order, useData and npm packages.
+description: Build a complete app on a CanvasView canvas from several custom components that share state or open one another (an inbox that opens each email), and give components live data from an outside service through an owner-approved data source. Covers the app contract, the build order, opens and instances, useData and npm packages.
 ---
 
 # Build an app
@@ -33,6 +33,60 @@ Changing the contract while stored values no longer fit fails with `state_confli
 request sets or clears them (`state` on `update_canvas`, `set_state` in a patch). Removing a node the
 contract names fails unless the patch also sets the contract. Reading is never restricted. See
 [contract-app.json](../../examples/contract-app.json).
+
+## A parent that opens other components
+
+A component can open other components beside it, for everyone: an inbox lists emails, and clicking
+one opens it in an email reader. Each opened item is an instance. Declare on the parent's node what
+it can open:
+
+```json
+{ "id": "inbox", "kind": "component", "source": "...", "data": { "emails": [] },
+  "opens": { "email": { "ref": "email-reader", "key": "emailId" } } }
+```
+
+- `ref` is a saved component: save the reader with `save_component` first, or the canvas is refused
+  with `component_not_found`. An instance renders it with the open input as its `data`.
+- `key` names the input field that tells instances apart. Opening the same key again brings back the
+  one there is, restored if it was minimized or closed, with the new input as its data; its id, state
+  and place stay.
+- Anyone who can open the canvas, link viewers too, can open, minimize, restore and close instances.
+  Add `"access": "named"` to keep that to invited people and members. Removing one always needs an
+  invited person or a member. A declaration may hold its own `opens`, three levels deep.
+- A component opens only the types its node declares.
+
+```tsx
+import { canvas } from "@canvasview/kit";
+
+type Email = { emailId: string; from: string; subject: string; body: string };
+
+export default function Inbox({ data }: { data: { emails: Email[] } }) {
+  return (
+    <ul>{data.emails.map((email) => (
+      <li key={email.emailId}>
+        <button type="button" onClick={() => void canvas.open("email", email).catch(() => undefined)}>{email.subject}</button>
+        <button type="button" onClick={() => void canvas.remove("email", email.emailId).catch(() => undefined)}>Archive</button>
+      </li>
+    ))}</ul>
+  );
+}
+```
+
+`canvas.open(type, input)` resolves with the instance and rejects with an Error carrying `reason`;
+`canvas.remove(type, key)` removes one of the parent's own. `useOpened("email")` gives the parent's
+instances with their status, live, to mark which emails are open; `useOpen("email")` gives
+`{ open, pending, error, available }` like `useTool` and never rejects. The reader is an ordinary
+component: `export default function EmailReader({ data }) { ... }`.
+
+State is scoped the same way: in an instance `useSharedState("draft", "")` is its own; `useFamilyState` is shared
+by the parent and all under it; `useCanvasState` is canvas-wide, as the parent's `useSharedState` stays; the parent
+reads each email's with `useOpenedState("email", "draft")`. Removing an instance erases its keys; a contract declares them in `scopes`.
+
+What people open is live state: no version, no charge. `get_canvas` lists `instances` with their data and
+`nodeStatus`; `wait_for_event` wakes on `instance.changed`. `change_instances` opens, closes, removes, renames
+and colors instances and nodes: a color (`#rrggbb`, set there once the canvas exists, never in the spec) is a
+soft shadow whose meaning is yours to say, such as who an item is for. `remove_node` takes its instances and state.
+A canvas holds 200 instances, a parent 50, each input up to 16 KB. See [inbox.json](../../examples/inbox.json), which lists the reader to save first.
 
 ## Live data from a data source
 
@@ -74,7 +128,7 @@ code such as `data_source_not_declared`, `invalid_data_path`, `invite_required` 
 
 ## npm packages
 
-When the kit is not enough (3D, maps, specialised charts), declare npm packages on the node with
+When the kit is not enough (3D, maps, specialized charts), declare npm packages on the node with
 exact versions and import them:
 
 ```json

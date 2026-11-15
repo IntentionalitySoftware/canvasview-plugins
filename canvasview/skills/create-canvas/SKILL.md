@@ -55,7 +55,7 @@ empty value would not make a valid canvas.
 | Need | Block (widget) |
 | --- | --- |
 | Context, instructions | `Note` (`note@1`) |
-| One record, labelled fields | `RecordDetail` (`facts@1`) |
+| One record, labeled fields | `RecordDetail` (`facts@1`) |
 | Rows of data | `DataTable` (`table@1`) |
 | Trends, comparisons over time | `Chart` (`chart@1`) |
 | Headline numbers with change | `MetricTiles` (`metric@1`) |
@@ -135,7 +135,7 @@ nothing, and returns `issues` with a `path` into your input, or `priceMicroUsd` 
 - [decision-with-evidence.json](../../examples/decision-with-evidence.json): a vendor choice with evidence and a reason.
 - [data-review.json](../../examples/data-review.json): metrics, table, chart and a verdict form.
 - [approval.json](../../examples/approval.json): a document with highlights and an approval, invited people only.
-- [group-poll.json](../../examples/group-poll.json): a live team poll; the organiser closes it and submits the result.
+- [group-poll.json](../../examples/group-poll.json): a live team poll; the organizer closes it and submits the result.
 - [workspace.json](../../examples/workspace.json): a team workspace with no answer, a board and a table to refresh.
 - [custom-component-shared-state.json](../../examples/custom-component-shared-state.json): one custom component with `useSharedState`.
 - [checklist-review.json](../../examples/checklist-review.json) and [calculator-decision.json](../../examples/calculator-decision.json): a shared checklist or calculator, then a decision.

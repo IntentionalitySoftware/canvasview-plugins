@@ -19,12 +19,12 @@ smallest thing below that does the job, then read the skill named beside it.
 | An interaction no block has | A custom component in TSX, styled with Tailwind | build-component |
 | Several pages in one component, such as a dashboard | `routes` on the node | build-component |
 | Several components that act as one app | A contract over shared state | build-app |
-| 3D, maps, specialised charts, a rich editor | npm packages, declared on the node | build-app |
+| 3D, maps, specialized charts, a rich editor | npm packages, declared on the node | build-app |
 | Live data from the organization's own services | An owner-approved data source and `useData` | build-app |
 | Server-side work for a component: a lookup, a poll, a stream, data it keeps | A canvas tool | build-tools |
 | The same canvas again next week, for another customer | A template | create-canvas |
 | A component worth using on other canvases | The component library | build-component |
-| Every canvas in the organization's colours and typeface | The organization's design | organization-design |
+| Every canvas in the organization's colors and typeface | The organization's design | organization-design |
 
 The eighteen building blocks cover most requests without any code: `Note`, `RecordDetail`,
 `DataTable`, `Chart`, `MetricTiles`, `Comparison`, `DocumentViewer`, `Timeline`, `Conversation`,
@@ -62,7 +62,7 @@ Choose by size and by whether the data changes.
 
 Never write a large file out as a tool argument: it is slow, it costs the person money, and it
 hits the 1 MB limit. CanvasView has no file upload yet. If the task needs a whole file on the
-canvas, say so, summarise it instead, and tell CanvasView with `send_feedback`.
+canvas, say so, summarize it instead, and tell CanvasView with `send_feedback`.
 
 ## Good practice
 
@@ -75,7 +75,7 @@ canvas, say so, summarise it instead, and tell CanvasView with `send_feedback`.
 - **Title every node** in the reader's words.
 - **Keep state in shared state**, not in React state: a frame can reload.
 - **Follow the organization's design.** Call `get_skill` with name `design-system` before
-  writing a component. Use the kit's classes, not colours or fonts written by hand.
+  writing a component. Use the kit's classes, not colors or fonts written by hand.
 - **Tell the person what you need and by when** when you send the link. A link is view only
   unless `access.linkRole` is `"participant"`; set it when people with the link should respond.
 

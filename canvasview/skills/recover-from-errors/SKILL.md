@@ -56,14 +56,14 @@ Nothing is charged when a call fails these checks or fails validation.
 
 - Validate first: `validate_canvas` takes the same input, reports every issue at once (with paths
   such as `nodes[2].data.rows`) and charges nothing. Fix them all, validate again, then retry.
-- `warnings` in a result are not errors: the call worked. A component wrote a colour or a font by
+- `warnings` in a result are not errors: the call worked. A component wrote a color or a font by
   hand where the organization chose a design; make the change each message names.
 - `invalid_input`: read each `issues[].path` (for example `nodes.2.data`) and its message, fix
   exactly that, and retry with the same key. Check props against [kit.md](../../reference/kit.md).
 - `component_compile_failed`: the message names the node and line, such as
   `ideas, line 3: Import only react or @canvasview/kit, not "lodash".` See the build-component skill.
 - `component_not_found`: a `ref` names no saved component. Run `search_components`, or send `source`.
-- `payload_too_large`: the canvas is over 1 MB. Send less data: summarise, or keep the rows
+- `payload_too_large`: the canvas is over 1 MB. Send less data: summarize, or keep the rows
   that matter.
 - `unknown_nodes`: `arrange_canvas` named a node that is not on the canvas. Read `get_canvas`.
 
