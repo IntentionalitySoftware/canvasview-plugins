@@ -2,7 +2,7 @@
 
 # CanvasView error codes
 
-Plugin version 0.10.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Plugin version 0.10.0. A failed tool call returns `isError: true` with JSON text
 | `agent_busy` | 429 | The canvas's agent has … prompts waiting. Send this one when it has caught up. |
 | `agent_not_connected` | 409 | No agent has connected to this account yet. |
 | `agent_not_running` | 409 | The canvas's agent changes the canvas only during its own run. |
-| `agent_setup_pending` | 403 | Connect your agent, or choose to do it later, to open the workspace. |
+| `agent_setup_pending` | 403 | Connect your agent, or choose to do it later, before using CanvasView. |
 | `agent_unavailable` | 503 | The canvas's agent is not available right now. / The canvas's agent is not set up on this deployment. |
 | `answer_limit` | 409 |  |
 | `answers_exist` | 409 | This canvas has answers, so it keeps its answer schema. Change the schema instead of removing it. |
@@ -81,6 +81,7 @@ Plugin version 0.10.0. A failed tool call returns `isError: true` with JSON text
 | `invalid_patch` | 400 | …: … |
 | `invalid_prompt` | 400 | Write what you want the canvas's agent to do. |
 | `invalid_signature` | 400 | The webhook signature did not verify. |
+| `invalid_size` | 400 | Give a size of 160 to 1600 wide and 80 to 1200 tall, or null to fit its content again. |
 | `invalid_source_path` | 400 | The path is not allowed. … |
 | `invalid_stripe_signature` | 400 | Send a signed Stripe event. |
 | `invalid_template` | 400 | Fix the template placeholders. … / With the canvas data removed, these paths fail validation. Bind each to a parameter (with a default when it needs one): …. / The template does not make a valid canvas with sample parameter values (each default, or an empty value of its type; a required string is its name). … / Fix the template access. … |
@@ -92,7 +93,7 @@ Plugin version 0.10.0. A failed tool call returns `isError: true` with JSON text
 | `lock_not_held` | 409 | You no longer hold the editing lock. Acquire it again before changing the canvas. |
 | `membership_unavailable` | 503 | CanvasView could not confirm this key's organization membership. Try again in a moment. |
 | `method_not_allowed` | 405, 404 | Use GET to search …s. / Use GET, PUT or DELETE for a …. / Use the method documented for this endpoint. / Stripe sends POST. / Clerk sends POST. |
-| `no_answer_expected` | 409 | This canvas is a workspace and does not take answers. |
+| `no_answer_expected` | 409 | This canvas has no answer form and does not take answers. |
 | `no_hold` | 409 | There is no hold for this run. |
 | `no_organization` | 401 | Sign in at app.canvasview.dev first, then connect your agent again. |
 | `node_not_found` | 404 | This canvas has no node with that ID. |

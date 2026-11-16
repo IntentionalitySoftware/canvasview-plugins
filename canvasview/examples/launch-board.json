@@ -1,8 +1,8 @@
 {
-  "description": "A launch workspace with no answer: a shared board people keep working on and a status table the agent refreshes with patch_canvas.",
+  "description": "A launch board with no answer form: a shared board people keep working on and a status table the agent refreshes with patch_canvas.",
   "input": {
-    "idempotencyKey": "example-workspace-replace-me",
-    "title": "Spring launch workspace",
+    "idempotencyKey": "example-launch-board-replace-me",
+    "title": "Spring launch board",
     "nodes": [
       {
         "id": "brief",

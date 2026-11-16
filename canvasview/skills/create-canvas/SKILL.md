@@ -15,7 +15,7 @@ Before you write any nodes, answer three questions, in your head or with the per
 
 - **What must come back?** A choice, a yes or no, a few numbers, a ticked list, free text.
   This becomes the `answerSchema`. If nothing comes back and people simply work on it
-  together, make a workspace (below).
+  together, make a canvas with no answer form (below).
 - **Who will use it?** One decider, a reviewer, a whole team at once. This decides the access
   mode (see the work-with-people skill) and whether values live in shared state.
 - **What do they need to see to answer well?** Only the evidence that changes the answer.
@@ -25,7 +25,7 @@ Then pick the shape:
 
 - **Decision canvas**: one question, evidence, and an input block that drafts the answer.
   This is the default.
-- **Workspace**: leave out `answerSchema` (and `question` if the title says enough). People work
+- **A canvas people keep working in**: leave out `answerSchema` (and `question` if the title says enough). People work
   over time (a board, a shared list, a live table); there is no answer panel, the canvas never
   becomes `answered`, and it stays open until you close it or it expires. Keep values in shared
   state with `stateKey` and read them with `get_canvas_state`; refresh data with `patch_canvas`.
@@ -136,7 +136,7 @@ nothing, and returns `issues` with a `path` into your input, or `priceMicroUsd` 
 - [data-review.json](../../examples/data-review.json): metrics, table, chart and a verdict form.
 - [approval.json](../../examples/approval.json): a document with highlights and an approval, invited people only.
 - [group-poll.json](../../examples/group-poll.json): a live team poll; the organizer closes it and submits the result.
-- [workspace.json](../../examples/workspace.json): a team workspace with no answer, a board and a table to refresh.
+- [launch-board.json](../../examples/launch-board.json): a team board with no answer form, a board and a table to refresh.
 - [custom-component-shared-state.json](../../examples/custom-component-shared-state.json): one custom component with `useSharedState`.
 - [checklist-review.json](../../examples/checklist-review.json) and [calculator-decision.json](../../examples/calculator-decision.json): a shared checklist or calculator, then a decision.
 

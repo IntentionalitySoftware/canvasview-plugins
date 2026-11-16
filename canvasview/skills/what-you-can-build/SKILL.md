@@ -15,7 +15,7 @@ smallest thing below that does the job, then read the skill named beside it.
 | --- | --- | --- |
 | One decision, approval or review from a person | Building blocks and an answer schema | create-canvas |
 | A group to vote, rank or sort things together | `Poll`, `RankedVote`, `Board` | create-canvas, and the `group-poll` example |
-| A place people keep working in, with no final answer | A workspace (no `answerSchema`) | create-canvas |
+| A place people keep working in, with no final answer | A canvas with no answer form (no `answerSchema`) | create-canvas |
 | An interaction no block has | A custom component in TSX, styled with Tailwind | build-component |
 | Several pages in one component, such as a dashboard | `routes` on the node | build-component |
 | Several components that act as one app | A contract over shared state | build-app |
