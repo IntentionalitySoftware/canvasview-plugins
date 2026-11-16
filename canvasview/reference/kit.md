@@ -2,7 +2,7 @@
 
 # CanvasView kit reference
 
-Plugin version 0.11.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.12.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
@@ -40,7 +40,7 @@ A component can open other components on the canvas, for everyone, such as an in
 
 ## Data sources
 
-The sandbox has no network. A component reaches outside data only through a data source the account owner approved in CanvasView settings: call list_data_sources to see their names, hosts and methods, and request_data_source to ask the owner for a new one. Declare every source a canvas's components call in dataSources: ["orders"] in the spec; create, update, patch and validate_canvas refuse a name the account does not have. Each call goes through CanvasView: path stays under the source's base URL and prefix (no .., no full URLs), at most 256 KB sent and 1 MB received, JSON or text only, 10 seconds, no redirects, and 60 requests a minute per viewer and 600 per canvas. Viewers' cookies, sign-in and address are never sent. When the owner chose it, a source receives the person's email as X-CanvasView-Viewer with each write, and with reads on canvases that need sign-in. Each write is recorded for the canvas's owner and Admins (get_action_log): who, the source, the method, the path and the status, never the query or the body. Free for now.
+The sandbox has no network. A component reaches outside data only through a data source the account owner approved in CanvasView settings: call list_data_sources to see their names, hosts and methods, and request_data_source to ask the owner for a new one. Declare every source a canvas's components call in dataSources: ["orders"] in the spec; create, update, patch and validate_canvas refuse a name the account does not have. Each call goes through CanvasView: path stays under the source's base URL and prefix (no .., no full URLs), at most 256 KB sent and 1 MB received, JSON or text only, 10 seconds, no redirects, and 60 requests a minute per viewer and 600 per canvas. Viewers' cookies, sign-in and address are never sent. When the owner chose it, a source receives the person's email as X-CanvasView-Viewer with each write, and with reads on canvases that need sign-in. Each write is recorded for the canvas's managers, its owner, its workspace's Leads and Admins (get_action_log): who, the source, the method, the path and the status, never the query or the body. Free for now.
 
 ## Canvas tools
 

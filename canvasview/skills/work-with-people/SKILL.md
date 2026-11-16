@@ -33,14 +33,15 @@ Set `access` on `create_canvas`, or change it later with `set_canvas_access` (fr
 | `signed_in` | Anyone signed in to CanvasView | Knowing who answered, verified names |
 | `invited` | Signed-in people whose verified email is on `invited` (1 to 50) | Anything confidential |
 
-- Whatever the mode, the canvas owner and Admins of its organization can open it, and so can every
-  member when its visibility is `organization`. People who leave the organization lose that at once.
+- Whatever the mode, its owner, the Leads of its workspace and the organization's Admins can open it,
+  and so can its workspace's Contributors when visibility is `workspace` and every member when it is
+  `organization`. People who leave lose that at once; people taken out of a workspace, within a minute.
 - **A link is view only unless you say otherwise.** Someone with only the link (signed in or not)
   can look, and cannot answer, vote or comment, until `access.linkRole` is `"participant"`. Set it
   when people who are not invited should respond: `{ "mode": "link", "linkRole": "participant" }`.
 - An entry of `invited` may carry a role: `viewer` (View), `participant` (Respond, the default),
   `editor` (Edit) or `manager` (Manage), as `{ "email": "...", "role": "viewer" }`. Edit and Manage are
-  for members of the organization: anyone else stands as Respond until they join. The answer's
+  for members of the organization, from any workspace: anyone else stands as Respond until they join. The answer's
   `who` says who can do what; read it before telling the person.
 - Buttons that change the organization's data, and tools, work only for invited people and members.
 - With `invited`, each newly added address gets one invitation email with the title and link;
@@ -55,16 +56,19 @@ Set `access` on `create_canvas`, or change it later with `set_canvas_access` (fr
 
 ## Choose who in the organization sees it
 
-`visibility` decides whose Canvases page and agents see a canvas; it does not change who can open the link.
+An organization has workspaces, each with its own canvases, library, data sources, Leads and Contributors
+(`list_workspaces`); an Admin leads every one. `visibility` decides who in the organization sees a canvas
+in their list and through their agent, and who can edit it; it does not change who can open the link.
 Set `access.visibility` on `create_canvas`, or send `visibility` alone to `set_canvas_access`:
 
-- `private` (the default unless an Admin changed it): the person whose key created it, and Admins.
-- `organization`: every member. Use it for canvases teammates should find and keep working on.
+- `private`: the person whose key created it, the Leads of its workspace, and Admins.
+- `workspace` (the default unless a Lead or an Admin changed it): also every Contributor there, as editors.
+- `organization`: every member, as editors. Use it for canvases other workspaces should find.
 
-Only the owner's or an Admin's key can change it. A canvas your person cannot see returns 404, and
-its events never reach your key.
+Only a manager's key can change it: the owner's, a Lead's of its workspace, an Admin's, or one whose
+person is invited as `manager`. A canvas your person cannot see returns 404, and its events never reach your key.
 
-The owner and Admins can see who opened a canvas: `get_canvas` returns `viewers` ({ count, latestAt })
+Managers can see who opened a canvas: `get_canvas` returns `viewers` ({ count, latestAt })
 and `list_canvas_viewers` lists each viewer, verified or not. Tell people a canvas records this when it matters.
 
 ## Wait for the answer
@@ -86,8 +90,8 @@ created with `stayOpen: true`, which accepts any number of answers until you `cl
 
 ## Follow several canvases at once
 
-`wait_for_event` waits up to 60 seconds for the next event on any canvas in the account (or one
-`canvasId`) and returns `{ events, next }`; call it again with `since: next` so you never miss or
+`wait_for_event` waits up to 60 seconds for the next event on the canvases you can see in one
+workspace (`workspace`, else your home workspace) or one `canvasId`, and returns `{ events, next }`; call it again with `since: next` so you never miss or
 repeat one. Events are pointers only (`answer.submitted`, `state.changed`, `canvas.closed` and so
 on, with the canvas ID): read the details with `get_answers` or `get_canvas_state`.
 `instance.changed` means a person opened or closed something, such as an email: `get_canvas` lists it.

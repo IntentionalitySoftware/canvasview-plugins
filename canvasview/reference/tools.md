@@ -2,7 +2,7 @@
 
 # CanvasView MCP tools
 
-Plugin version 0.11.0. Every tool CanvasView serves at `https://app.canvasview.dev/mcp`, with its description and input fields.
+Plugin version 0.12.0. Every tool CanvasView serves at `https://app.canvasview.dev/mcp`, with its description and input fields.
 Errors come back as a tool result with `isError: true` and JSON text `{ error, message }`; invalid input adds `issues: [{ path, message }]`. See errors.md.
 
 - [`create_canvas`](#create_canvas)
@@ -41,6 +41,7 @@ Errors come back as a tool result with `isError: true` and JSON text `{ error, m
 - [`publish_tools`](#publish_tools)
 - [`get_tool_log`](#get_tool_log)
 - [`get_action_log`](#get_action_log)
+- [`list_workspaces`](#list_workspaces)
 - [`list_widgets`](#list_widgets)
 - [`get_kit_reference`](#get_kit_reference)
 - [`get_skill`](#get_skill)
@@ -50,6 +51,7 @@ Errors come back as a tool result with `isError: true` and JSON text `{ error, m
 - [`search_components`](#search_components)
 - [`get_component`](#get_component)
 - [`delete_component`](#delete_component)
+- [`copy_component`](#copy_component)
 - [`save_template`](#save_template)
 - [`search_templates`](#search_templates)
 - [`get_template`](#get_template)
@@ -62,7 +64,7 @@ Errors come back as a tool result with `isError: true` and JSON text `{ error, m
 
 ## create_canvas
 
-Create a shared canvas from catalog widgets or sandboxed React TSX components. Read get_kit_reference for imports and answer hooks, and get_skill for how-to guides. Send the returned link to the person who will answer. Leave out answerSchema (and question, if you like) for a canvas with no answer form, one people keep working in together: it has no answer panel, never becomes answered and stays open until it is closed or expires. Reuse the same idempotency key if the outcome is unknown. Call search_components before writing a new component and reuse a match with ref; save anything reusable with save_component. access sets who may open it: link (default, anyone with the URL), signed_in (any signed-in CanvasView user) or invited (signed-in users with a verified email in invited, up to 50; each new address gets an invitation email). A canvas shared by link is view only unless access.linkRole is participant: set it when people who are not invited should answer, vote or comment. access.visibility sets who in the organization sees it in their list and through their agent: private (you, as the person whose key or connection created it, and Admins) or organization (every member). Without access or expiresInHours (1 to 2160), the account's defaults apply: link, private and 7 days unless an Admin changed them. To reuse a saved template, send template (its name) and params instead of the spec (nodes, edges, question, answerSchema); title, expiresInHours, stayOpen and access still override the template's. An account holds at most 1,000 active canvases. For an app of several components that share state, add contract: state maps each key (or prefix ending .* or :*) to { schema?, writers: node ids or "any" }, and roles maps node ids to { purpose, reads, writes }; the canvas then refuses state writes to undeclared keys, values that do not fit and writes from nodes that are not writers (the agent may always write). For an app whose components open others, scopes: { <node>: { family?: { <key>: entry }, instances?: { <type path>: { <key>: entry } } } } declares the keys a node shares with everything it opened (family) and the keys each opened instance keeps for itself, by the types from the node down to it (email, or email.attachment); their writers are "parent" (the node), type paths, "agent" or "any". Without contract, state is open. A component node may declare opens: { <type>: { ref, key, access?, size?, opens? } }, what its component can open beside it on the canvas (an inbox opening each email): ref is a saved component (save it with save_component first), which renders with the open input as its data; key names the input field that tells instances apart (emailId), so opening the same key again opens the one there is with the new input as its data; anyone who can open the canvas, link viewers too, can open, minimize, restore and close these, unless access is "named", which keeps that to the people the owner named (invited people and members); removing one always needs a named person; size ({ width, height }, as a node's) is what it opens at, the width held and the height room until its content is measured, and people can drag its corner to resize it; opens inside it is what the opened component can open in turn, up to 3 levels, 10 types a level. A component opens only what its node declares. What people open is live state, never a new version: read it with get_canvas and change it with change_instances. dataSources names the account's data sources (list_data_sources) that its components call with useData; a canvas that uses one needs sign-in by default, because whoever can open it can call the source, so set access yourself only if link access is really intended. Check the input first with validate_canvas, which is free, and start from a working input with list_examples and get_example. When the organization has chosen a design (get_kit_reference), the result may carry warnings: [{ path, code, message }] for component source that writes a color or a font by hand; the canvas is created all the same, so fix the source with patch_canvas.
+Create a shared canvas from catalog widgets or sandboxed React TSX components. Read get_kit_reference for imports and answer hooks, and get_skill for how-to guides. Send the returned link to the person who will answer. Leave out answerSchema (and question, if you like) for a canvas with no answer form, one people keep working in together: it has no answer panel, never becomes answered and stays open until it is closed or expires. Reuse the same idempotency key if the outcome is unknown. Call search_components before writing a new component and reuse a match with ref; save anything reusable with save_component. access sets who may open it: link (default, anyone with the URL), signed_in (any signed-in CanvasView user) or invited (signed-in users with a verified email in invited, up to 50; each new address gets an invitation email). A canvas shared by link is view only unless access.linkRole is participant: set it when people who are not invited should answer, vote or comment. access.visibility sets who in the organization sees it in their list and through their agent, and what they can do: private (you, as the person whose key or connection created it, the Leads of its workspace and Admins), workspace (also everyone in its workspace, who can edit it) or organization (every member, who can edit it). Without access or expiresInHours (1 to 2160), the workspace's and then the account's defaults apply: link, workspace and 7 days unless a Lead or an Admin changed them. workspace (an id or slug from list_workspaces) creates the canvas in that workspace, one your key's person is in; without it, in your connection's home workspace. The canvas uses that workspace's saved components, templates and data sources, and the result's workspace says which it is in. To reuse a saved template of the workspace, send template (its name) and params instead of the spec (nodes, edges, question, answerSchema); title, expiresInHours, stayOpen and access still override the template's. An account holds at most 1,000 active canvases. For an app of several components that share state, add contract: state maps each key (or prefix ending .* or :*) to { schema?, writers: node ids or "any" }, and roles maps node ids to { purpose, reads, writes }; the canvas then refuses state writes to undeclared keys, values that do not fit and writes from nodes that are not writers (the agent may always write). For an app whose components open others, scopes: { <node>: { family?: { <key>: entry }, instances?: { <type path>: { <key>: entry } } } } declares the keys a node shares with everything it opened (family) and the keys each opened instance keeps for itself, by the types from the node down to it (email, or email.attachment); their writers are "parent" (the node), type paths, "agent" or "any". Without contract, state is open. A component node may declare opens: { <type>: { ref, key, access?, size?, opens? } }, what its component can open beside it on the canvas (an inbox opening each email): ref is a saved component (save it with save_component first), which renders with the open input as its data; key names the input field that tells instances apart (emailId), so opening the same key again opens the one there is with the new input as its data; anyone who can open the canvas, link viewers too, can open, minimize, restore and close these, unless access is "named", which keeps that to the people the owner named (invited people and members); removing one always needs a named person; size ({ width, height }, as a node's) is what it opens at, the width held and the height room until its content is measured, and people can drag its corner to resize it; opens inside it is what the opened component can open in turn, up to 3 levels, 10 types a level. A component opens only what its node declares. What people open is live state, never a new version: read it with get_canvas and change it with change_instances. dataSources names the workspace's data sources (list_data_sources) that its components call with useData; a canvas that uses one needs sign-in by default, because whoever can open it can call the source, so set access yourself only if link access is really intended. Check the input first with validate_canvas, which is free, and start from a working input with list_examples and get_example. When the organization has chosen a design (get_kit_reference), the result may carry warnings: [{ path, code, message }] for component source that writes a color or a font by hand; the canvas is created all the same, so fix the source with patch_canvas.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -79,10 +81,11 @@ Create a shared canvas from catalog widgets or sandboxed React TSX components. R
 | `dataSources` | array of string matching `^[a-z][a-z0-9-]{1,63}$` (at most 20 items) | no | |
 | `template` | string matching `^[a-z][a-z0-9-]{1,63}$` | no | |
 | `params` | object | no | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 Nested fields:
 
-- `access`: `mode?`: "link" | "signed_in" | "invited"; `invited?`: array of string (email) matching `^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$` (at most 254 characters) (at most 50 items); `visibility?`: "private" | "organization"; `linkRole?`: "viewer" | "participant"
+- `access`: `mode?`: "link" | "signed_in" | "invited"; `invited?`: array of string (email) matching `^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$` (at most 254 characters) (at most 50 items); `visibility?`: "private" | "workspace" | "organization"; `linkRole?`: "viewer" | "participant"
 - `nodes (kind "widget")`: `id`: string (1 to 64 characters); `kind`: "widget"; `title?`: string (1 to 120 characters); `widget`: "note@1" | "facts@1" | "table@1" | "timeline@1" | "metric@1" | "chart@1" | "decision@1" | "form@1" | "checklist@1" | "comparison@1" | "document@1" | "approval@1" | "calculator@1" | "poll@1" | "ranked-vote@1" | "board@1" | "conversation@1" | "status-list@1"; `data`: object; `position?`: { x, y }; `size?`: { width, height }
 - `nodes (kind "component")`: `id`: string (1 to 64 characters); `kind`: "component"; `title?`: string (1 to 120 characters); `source?`: string (1 to 65536 characters); `ref?`: string (at most 200 characters); `packages?`: record of string (at most 256 characters); `routes?`: array of object (1 to 20 items); `opens?`: record of object; `data?`: object; `position?`: { x, y }; `size?`: { width, height }
 - `edges`: `from`: string; `to`: string; `label?`: string (at most 120 characters)
@@ -91,20 +94,21 @@ Nested fields:
 
 ## update_canvas
 
-Replace the canvas spec using the current base version. Read the canvas again if the version conflicts. The title is the canvas's name, not part of its versions: a spec that differs from the current one only in its title renames the canvas, makes no new version and is free. To change a few nodes or refresh data, use patch_canvas instead. Removing answerSchema is refused once answers exist. A new or changed contract is refused while stored shared state does not fit it, unless state in the same request sets those keys to values that fit or clears them with null. A spec without a node, or without a type in a node's opens, removes the instances opened from it, with their state; send opens again on each component node that keeps it. While someone else is editing the canvas the call fails with canvas_locked and says when to retry (retryAfterSeconds).
+Replace the canvas spec using the current base version, or move the canvas to another workspace. To move it, send id and workspace (an id or slug from list_workspaces) alone: you must be a Lead in the workspace it is in and in the one it goes to, and every data source it declares must exist there by the same name (otherwise unknown_data_source, and it stays where it is); it then uses that workspace's library and sources. A move is free and makes no version; the result is { id, moved, workspace, from? }. Otherwise send spec and baseVersion. Read the canvas again if the version conflicts. The title is the canvas's name, not part of its versions: a spec that differs from the current one only in its title renames the canvas, makes no new version and is free. To change a few nodes or refresh data, use patch_canvas instead. Removing answerSchema is refused once answers exist. A new or changed contract is refused while stored shared state does not fit it, unless state in the same request sets those keys to values that fit or clears them with null. A spec without a node, or without a type in a node's opens, removes the instances opened from it, with their state; send opens again on each component node that keeps it. While someone else is editing the canvas the call fails with canvas_locked and says when to retry (retryAfterSeconds).
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `baseVersion` | integer (greater than 0) | yes | |
-| `spec` | { title, question?, nodes, edges?, answerSchema?, expiresInHours?, stayOpen?, contract?, dataSources? } | yes | |
+| `baseVersion` | integer (greater than 0) | no | |
+| `spec` | { title, question?, nodes, edges?, answerSchema?, expiresInHours?, stayOpen?, contract?, dataSources? } | no | |
 | `access` | { mode?, invited?, visibility?, linkRole? } | no | |
 | `state` | record of JSON value | no | |
 | `id` | string matching `^[a-f0-9]{32}$` | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 Nested fields:
 
 - `spec`: `title`: string (1 to 120 characters); `question?`: string (1 to 4000 characters); `nodes`: array of object (1 to 100 items); `edges?`: array of object (at most 200 items); `answerSchema?`: { type: "object", properties, required?, additionalProperties?: false }; `expiresInHours?`: integer (1 to 2160); `stayOpen?`: boolean; `contract?`: { state, roles?, events?, scopes? }; `dataSources?`: array of string matching `^[a-z][a-z0-9-]{1,63}$` (at most 20 items)
-- `access`: `mode?`: "link" | "signed_in" | "invited"; `invited?`: array of string (email) matching `^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$` (at most 254 characters) (at most 50 items); `visibility?`: "private" | "organization"; `linkRole?`: "viewer" | "participant"
+- `access`: `mode?`: "link" | "signed_in" | "invited"; `invited?`: array of string (email) matching `^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$` (at most 254 characters) (at most 50 items); `visibility?`: "private" | "workspace" | "organization"; `linkRole?`: "viewer" | "participant"
 
 ## patch_canvas
 
@@ -145,6 +149,7 @@ Check a create_canvas, update_canvas or patch_canvas input without creating or c
 | `dataSources` | array of any | no | |
 | `template` | string | no | |
 | `params` | object | no | |
+| `workspace` | string | no | |
 | `baseVersion` | number | no | |
 | `spec` | object | no | |
 | `state` | object | no | |
@@ -195,7 +200,7 @@ Nested fields:
 
 ## get_canvas
 
-Read an account canvas, its current version, its access (mode, invite list, visibility and linkRole) with who: a summary of who can do what (link, members, each invited address, owner and Admins), the layout (position and size) of each node, the components view arrangement (panes) the default view, and role: this key's role on the canvas (editor, or manager for the owner's or an Admin's key). previousTitles lists the titles it had before it was renamed, newest first (up to 10); a canvas is known by its id, never by its title. It has what people opened, closed, named and colored too: nodeStatus maps each core node to open, minimized or closed, nodeNames maps a core node people renamed to the name they see in place of its title, nodeColors maps a core node given a color to it (#rrggbb), and instances lists what components opened (an email an inbox opened), each { id, parent: { kind, id }, node, type, ref, access, key, name (a person gave it, shown in place of its type and key, or null), color (#rrggbb or null), data (the input it was opened with), status, openedBy: { kind, name }, openedAt, updatedAt, position, size (the { width, height } a person gave it, or null: as wide as its declaration's size and as tall as its content) }. Change them with change_instances. For the canvas owner's or an Admin's key it also has viewers: { count, latestAt }, from the access log (list_canvas_viewers lists them).
+Read an account canvas, its current version, its access (mode, invite list, visibility and linkRole) with who: a summary of who can do what (link, workspace: its workspace's Contributors, members: everyone else in the organization, each invited address, managers: its owner, Leads and Admins), the layout (position and size) of each node, the components view arrangement (panes) the default view, and role: this key's role on the canvas, by its person's role in the canvas's workspace (manager for the key of its owner, a Lead of its workspace or an Admin; editor for a Contributor's key on a workspace canvas, and for any member's key on an organization canvas). previousTitles lists the titles it had before it was renamed, newest first (up to 10); a canvas is known by its id, never by its title. workspaceId is the workspace it is in (list_workspaces), whose library and data sources it uses. It has what people opened, closed, named and colored too: nodeStatus maps each core node to open, minimized or closed, nodeNames maps a core node people renamed to the name they see in place of its title, nodeColors maps a core node given a color to it (#rrggbb), and instances lists what components opened (an email an inbox opened), each { id, parent: { kind, id }, node, type, ref, access, key, name (a person gave it, shown in place of its type and key, or null), color (#rrggbb or null), data (the input it was opened with), status, openedBy: { kind, name }, openedAt, updatedAt, position, size (the { width, height } a person gave it, or null: as wide as its declaration's size and as tall as its content) }. Change them with change_instances. For a manager's key it also has viewers: { count, latestAt }, from the access log (list_canvas_viewers lists them).
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -203,7 +208,7 @@ Read an account canvas, its current version, its access (mode, invite list, visi
 
 ## list_canvas_viewers
 
-List who opened a canvas, most recent first: name, email (signed-in people, verified), verified (false for anonymous link viewers, listed by the name they typed, one entry per browser), access (owner, admin, organization, invited or viewer), firstAt and lastAt. Holds no canvas content and is deleted with the canvas. Only the owner's or an Admin's key may read it; another member's key gets 403. Read-only and free.
+List who opened a canvas, most recent first: name, email (signed-in people, verified), verified (false for anonymous link viewers, listed by the name they typed, one entry per browser), access (owner, admin, lead, invited, workspace, organization or viewer), firstAt and lastAt. Holds no canvas content and is deleted with the canvas. Only a manager's key (its owner, a Lead of its workspace or an Admin) may read it; another member's key gets 403. Read-only and free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -211,14 +216,14 @@ List who opened a canvas, most recent first: name, email (signed-in people, veri
 
 ## set_canvas_access
 
-Change who may open a canvas, who in the organization sees it, or both. Free, not an update: the version stays the same. mode is link (anyone with the URL), signed_in (any signed-in CanvasView user) or invited (signed-in users whose verified email is in invited, 1 to 50 addresses). The owner and Admins of its organization can always open it, and every member can when visibility is organization. An entry of invited is an address, or { email, role } with role viewer (View), participant (Respond, the default), editor (Edit) or manager (Manage). Edit and Manage are for members of the organization: anyone else invited with them stands as Respond, and gets the role once they join. Each newly added address gets one invitation email with the title and link, sent shortly after the call; notified is always empty. linkRole is what someone with only the link gets: viewer (the default, view only) or participant (they also answer, vote and comment); set participant when people who are not invited should respond. The answer's who says who can do what: link, members, each invited address (standsAs when an outsider was given Edit or Manage) and the owner and Admins. Viewers who no longer qualify are disconnected. visibility is private (the canvas owner and Admins see it in their list and through their agents) or organization (every member does); send it alone to keep the mode. Only the owner's or an Admin's key can change access or visibility; another member's key gets 403.
+Change who may open a canvas, who in the organization sees it, or both. Free, not an update: the version stays the same. mode is link (anyone with the URL), signed_in (any signed-in CanvasView user) or invited (signed-in users whose verified email is in invited, 1 to 50 addresses). Its owner (while in its workspace), the Leads of its workspace and the organization's Admins can always open and manage it; the Contributors of its workspace can open and edit it when visibility is workspace, and every member can when visibility is organization. An entry of invited is an address, or { email, role } with role viewer (View), participant (Respond, the default), editor (Edit) or manager (Manage). Edit and Manage are for members of the organization, from any of its workspaces: anyone else invited with them stands as Respond, and gets the role once they join. Each newly added address gets one invitation email with the title and link, sent shortly after the call; notified is always empty. linkRole is what someone with only the link gets: viewer (the default, view only) or participant (they also answer, vote and comment); set participant when people who are not invited should respond. The answer's who says who can do what: link, workspace, members (everyone else in the organization), each invited address (standsAs when an outsider was given Edit or Manage) and managers. Viewers who no longer qualify are disconnected. visibility is private (its owner, its workspace's Leads and Admins see it in their list and through their agents), workspace (everyone in its workspace does too) or organization (every member does); send it alone to keep the mode. Only a manager's key can change access or visibility: the owner's, a Lead's of its workspace, an Admin's, or one whose person is invited as manager; another member's key gets 403.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `id` | string matching `^[a-f0-9]{32}$` | yes | |
 | `mode` | "link" \| "signed_in" \| "invited" | no | |
 | `invited` | array of (string (email) matching `^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$` (at most 254 characters) \| { email, role? }) (at most 50 items) | no | |
-| `visibility` | "private" \| "organization" | no | |
+| `visibility` | "private" \| "workspace" \| "organization" | no | |
 | `linkRole` | "viewer" \| "participant" | no | |
 
 Nested fields:
@@ -235,9 +240,11 @@ Recover the result of a create call using its original idempotency key. A canvas
 
 ## list_canvases
 
-List recent canvases you can see with status, expiry, access, visibility, owner (email, null with ownerFormer: true when the owner left the organization) and owned (yours), access (how you have access: owner, admin or organization), answers (how many were submitted), agent (the key or connection that created it), viewers ({ count, latestAt } on canvases you own, or all for an Admin), pinned (kept permanently), previousTitles (titles it had before it was renamed, newest first: match a canvas you know by an older name against these too), plus how many canvases the account keeps. A key sees what its person sees: an Admin every canvas, a Member their own and organization canvases.
+List the recent canvases of one workspace's listing that you can see (workspace, an id or slug from list_workspaces; without it, your connection's home workspace, which the result's workspace names): its own canvases, and the canvases of other workspaces that are set to organization. Each has id, workspaceId and workspaceRole (your role in its workspace: lead, contributor or null), status, expiry, access, visibility, owner (email, null with ownerFormer: true when the owner left the organization) and owned (yours), access (how you have access: owner, admin, lead, invited, workspace or organization), answers (how many were submitted), agent (the key or connection that created it), viewers ({ count, latestAt } on canvases you manage), pinned (kept permanently), previousTitles (titles it had before it was renamed, newest first: match a canvas you know by an older name against these too), plus how many canvases the account keeps. A key sees what its person sees: an Admin every canvas; in each workspace, a Lead every canvas and a Contributor their own and its workspace canvases; everyone the organization canvases. A workspace your key's person is not in is refused with not_in_workspace.
 
-No input.
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## get_answers
 
@@ -259,17 +266,18 @@ Wait up to 60 seconds (default 15) for a structured answer, and return { status,
 
 ## list_events
 
-List this account's canvas events after a cursor, oldest first: answer.submitted, state.changed (at most one per canvas every 5 seconds), change.requested (a person asked you for a change in a comment), comment.added (people commented; at most one per canvas every 5 seconds), instance.changed (a person opened, minimized, restored, closed or removed something on the canvas, such as an email from an inbox; at most one per canvas every 5 seconds; read instances and nodeStatus with get_canvas), canvas.closed, canvas.expired, canvas.deleted and canvas.removed. Each event is { id, type, canvasId, at } and carries no content: read the canvas, its answers, its state or its comments (list_comments) for details. Pass since: the next from the previous call to get each event once. canvasId limits it to one canvas. limit 1 to 200 (default 50). Events are kept 30 days. A Member's key receives events only for canvases it can see (its own and organization canvases); an Admin's key receives all. Free.
+List one workspace's canvas events after a cursor, oldest first: answer.submitted, state.changed (at most one per canvas every 5 seconds), change.requested (a person asked you for a change in a comment), comment.added (people commented; at most one per canvas every 5 seconds), instance.changed (a person opened, minimized, restored, closed or removed something on the canvas, such as an email from an inbox; at most one per canvas every 5 seconds; read instances and nodeStatus with get_canvas), canvas.closed, canvas.expired, canvas.deleted and canvas.removed. Each event is { id, type, canvasId, workspaceId, at } and carries no content: read the canvas, its answers, its state or its comments (list_comments) for details. Pass since: the next from the previous call to get each event once. The events are one workspace's: workspace (an id or slug from list_workspaces), else canvasId's own workspace when you pass canvasId (which limits it to that canvas), else your connection's home workspace, which the result's workspace names. limit 1 to 200 (default 50). Events are kept 30 days. A key receives events only for the workspace's canvases its person can see: a Lead's or an Admin's key every one, a Contributor's key their own and those set to workspace or organization. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `since` | integer (at least 0) | no | |
 | `canvasId` | string matching `^[a-f0-9]{32}$` | no | |
 | `limit` | integer (1 to 200) | no | Default 50. |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## wait_for_event
 
-Wait up to 60 seconds (default 15) for the next canvas event in this account, across the canvases this key can see or one canvasId, and return as soon as one exists, in the shape of list_events ({ events, next }; empty events at the timeout; limit 1 to 200, default 50). Without since it waits from now: events that happened earlier are not returned. Call it in a loop, passing next as since, to follow several canvases at once; instance.changed tells you a person opened or closed something, so you can read what they opened with get_canvas. Free.
+Wait up to 60 seconds (default 15) for the next canvas event of one workspace (as list_events chooses it: workspace, canvasId's own, or your home), across the canvases this key can see there or one canvasId, and return as soon as one exists, in the shape of list_events ({ events, next, workspace }; empty events at the timeout; limit 1 to 200, default 50). Without since it waits from now: events that happened earlier are not returned. Call it in a loop, passing next as since, to follow several canvases at once; instance.changed tells you a person opened or closed something, so you can read what they opened with get_canvas. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -277,6 +285,7 @@ Wait up to 60 seconds (default 15) for the next canvas event in this account, ac
 | `canvasId` | string matching `^[a-f0-9]{32}$` | no | |
 | `seconds` | integer (1 to 60) | no | Default 15. |
 | `limit` | integer (1 to 200) | no | Default 50. |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## close_canvas
 
@@ -306,7 +315,7 @@ Keep a canvas permanently (pinned: true) or let it expire again (pinned: false).
 
 ## delete_canvas
 
-Delete a canvas permanently, at once: its content, answers and shared state are erased, open viewers are disconnected and the link stops working. It cannot be undone. Ask the person before deleting. Free. Only the owner's or an Admin's key can delete a canvas; another member's key gets 403.
+Delete a canvas permanently, at once: its content, answers and shared state are erased, open viewers are disconnected and the link stops working. It cannot be undone. Ask the person before deleting. Free. Only a manager's key can delete a canvas (its owner's, a Lead's of its workspace, an Admin's); another member's key gets 403.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -468,13 +477,19 @@ Read a canvas's newest tool calls: { kept, calls: [{ id, tool, commit, triggered
 
 ## get_action_log
 
-Read who acted in the organization's systems through a canvas, newest first: each tool call a person made, and each data source write (POST, PUT, PATCH, DELETE) sent for one, from a component or by a tool during their call, as { actions: [{ id, kind: call or write, at, by: { userId, email, name, standing: invited, organization, owner or admin }, tool, call, source, method, path, status, outcome }], next, refused: { count, latestAt }, kept }. Paths have no query and nothing of a body or header is kept, refused counts writes refused to people with only the link or a viewer's role, the log keeps 90 days and at most 1000 rows, limit is 1 to 200 (default 50) with before as the next of the previous page, and only the owner's or an Admin's key may read it; free.
+Read who acted in the organization's systems through a canvas, newest first: each tool call a person made, and each data source write (POST, PUT, PATCH, DELETE) sent for one, from a component or by a tool during their call, as { actions: [{ id, kind: call or write, at, by: { userId, email, name, standing: owner, admin, lead, invited, workspace or organization }, tool, call, source, method, path, status, outcome }], next, refused: { count, latestAt }, kept }. Paths have no query and nothing of a body or header is kept, refused counts writes refused to people with only the link or a viewer's role, the log keeps 90 days and at most 1000 rows, limit is 1 to 200 (default 50) with before as the next of the previous page, and only a manager's key may read it (its owner's, a Lead's of its workspace, an Admin's); free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `id` | string matching `^[a-f0-9]{32}$` | yes | |
 | `limit` | integer (1 to 200) | no | |
 | `before` | integer (greater than 0) | no | |
+
+## list_workspaces
+
+List the workspaces of this organization: groups of canvases, people, keys, data sources and library inside it. Each is { id, slug, name, isDefault, role, home }: role is your key's person's role there (lead, contributor, or null when they are not in it; an organization Admin leads every workspace), and home marks the one you act in when a tool's workspace is left out, your connection's home workspace. Pass a workspace's id or slug as workspace to create_canvas, list_canvases, the library and data source tools and the event tools to act there instead; you may act only where role is not null, with that role. Free.
+
+No input.
 
 ## list_widgets
 
@@ -512,7 +527,7 @@ Read one example by name: its description and complete create_canvas input. Repl
 
 ## save_component
 
-Save a reusable TSX component to this account's private library, checked as create_canvas checks components. Saving an existing name replaces it. Use it on a canvas with { kind: "component", ref: name, data }. When the organization has chosen a design, the result may carry warnings, as validate_canvas returns them, for source that writes a color or a font by hand; the component is saved all the same. Free.
+Save a reusable TSX component to a workspace's library (workspace, else your home workspace), checked as create_canvas checks components. A name is unique in its workspace: saving an existing name there replaces it, and another workspace's component of that name is its own. Use it on a canvas of that workspace with { kind: "component", ref: name, data }. When the organization has chosen a design, the result may carry warnings, as validate_canvas returns them, for source that writes a color or a font by hand; the component is saved all the same. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -520,35 +535,49 @@ Save a reusable TSX component to this account's private library, checked as crea
 | `description` | string (1 to 500 characters) | yes | |
 | `source` | string (at least 1 character) | yes | |
 | `exampleData` | object | no | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## search_components
 
-Search this account's saved components by name and description, most used first. An empty query lists the most used. Returns name, description, example data, use count and updated time. Free.
+Search a workspace's saved components (workspace, else your home workspace) by name and description, most used first. An empty query lists the most used. Returns workspace and components: name, description, example data, use count, updated time, mine (true when your key's person saved it), and copiedFrom { workspace, name, at } for a copy from another workspace. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `query` | string (at most 200 characters) | no | |
 | `limit` | integer (1 to 50) | no | Default 20. |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## get_component
 
-Read a saved component with its full source, to reuse or fork it. Free.
+Read a saved component of a workspace (workspace, else your home workspace) with its full source, to reuse or fork it. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `name` | string matching `^[a-z][a-z0-9-]{1,63}$` | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## delete_component
 
-Delete a saved component. Canvases that already use it keep their copy. Free.
+Delete a saved component from a workspace (workspace, else your home workspace). Canvases that already use it keep their copy, and so does a copy in another workspace. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `name` | string matching `^[a-z][a-z0-9-]{1,63}$` | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
+
+## copy_component
+
+Copy a saved component (name, from workspace, else your home workspace) into another workspace you are in (to, an id or slug from list_workspaces), under the same name, so canvases there can use it. The copy is independent: changing or deleting either one never changes the other. It records where it came from (copiedFrom). Refused with component_exists when the name is already taken in that workspace: delete or rename the one there first. Returns the copy with its workspace. Free.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `name` | string matching `^[a-z][a-z0-9-]{1,63}$` | yes | |
+| `to` | string (1 to 64 characters) | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## save_template
 
-Save a canvas as a reusable template in this account's private library: its spec with the data replaced by parameters. Send spec, where any value may be { "$param": "name" } (replaced by the value, keeping its type) and any string may contain {{name}} (escape a literal {{ as \{{), in title, question, node data, edge labels, and answer schema titles and enum values. Or send fromCanvasId with bindings, which map paths in that canvas's spec (title, nodes[#id].data.rows, nodes[2].data.markdown) to parameter names: every unbound value in node data is emptied, so the template keeps none of the canvas's data. parameters is a JSON schema object whose properties are string, number, integer, boolean, array (of scalars or flat objects) or object (flat), each with optional title, description, enum and default, plus required. The template is checked as create_canvas would check it, filling each parameter with its default or a sample value. Saving an existing name replaces it. Returns unusedParameters. Free.
+Save a canvas as a reusable template in a workspace's library (workspace, else your home workspace; a name is unique in its workspace): its spec with the data replaced by parameters. Send spec, where any value may be { "$param": "name" } (replaced by the value, keeping its type) and any string may contain {{name}} (escape a literal {{ as \{{), in title, question, node data, edge labels, and answer schema titles and enum values. Or send fromCanvasId with bindings, which map paths in that canvas's spec (title, nodes[#id].data.rows, nodes[2].data.markdown) to parameter names: every unbound value in node data is emptied, so the template keeps none of the canvas's data. parameters is a JSON schema object whose properties are string, number, integer, boolean, array (of scalars or flat objects) or object (flat), each with optional title, description, enum and default, plus required. The template is checked as create_canvas would check it, filling each parameter with its default or a sample value. Saving an existing name replaces it. Returns unusedParameters. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -557,6 +586,7 @@ Save a canvas as a reusable template in this account's private library: its spec
 | `parameters` | { type: "object", properties, required? } | no | Default {"type":"object","properties":{}}. |
 | `spec` | object | no | |
 | `bindings` | record of string matching `^[A-Za-z_][A-Za-z0-9_]{0,63}$` | no | |
+| `workspace` | string (1 to 64 characters) | no | |
 | `fromCanvasId` | string matching `^[a-f0-9]{32}$` | no | |
 
 Nested fields:
@@ -565,44 +595,50 @@ Nested fields:
 
 ## search_templates
 
-Search this account's saved canvas templates by name and description, most used first. An empty query lists the most used. Returns name, description, parameters, use count and updated time. Create a canvas from one with create_canvas { template, params }. Free.
+Search a workspace's saved canvas templates (workspace, else your home workspace) by name and description, most used first. An empty query lists the most used. Returns workspace and templates: name, description, parameters, use count, updated time and mine (true when your key's person saved it). Create a canvas from one with create_canvas { template, params } in the same workspace. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `query` | string (at most 200 characters) | no | |
 | `limit` | integer (1 to 50) | no | Default 20. |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## get_template
 
-Read a saved template with its spec, placeholders included, and its parameters. Free.
+Read a saved template of a workspace (workspace, else your home workspace) with its spec, placeholders included, and its parameters. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `name` | string matching `^[a-z][a-z0-9-]{1,63}$` | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## delete_template
 
-Delete a saved template. Canvases already made from it are not affected. Free.
+Delete a saved template from a workspace (workspace, else your home workspace). Canvases already made from it are not affected. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `name` | string matching `^[a-z][a-z0-9-]{1,63}$` | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## list_data_sources
 
-List the data sources the account owner approved, which a component may call through CanvasView with useData or fetchData from @canvasview/kit: each name, host, allowed methods (GET only unless the owner enabled writes), path prefix and the names of the secret headers CanvasView adds (never their values). A canvas lists the names it uses in dataSources. available is false, with a message, until CanvasView can store secrets. pendingRequests are the requests waiting for the owner. Only the owner creates, edits or removes a source, in settings; no tool can. Free.
+List the data sources a workspace's Leads approved (workspace, else your home workspace; the result's workspace names it), which a component on a canvas of that workspace may call through CanvasView with useData or fetchData from @canvasview/kit: each name, host, allowed methods (GET only unless a Lead enabled writes), path prefix and the names of the secret headers CanvasView adds (never their values). Each workspace has its own sources: a canvas reaches only its own workspace's, by the names it lists in dataSources. available is false, with a message, until CanvasView can store secrets. pendingRequests are the requests waiting for the workspace's Leads. Only a Lead creates, edits or removes a source, in settings; no tool can. Free.
 
-No input.
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## request_data_source
 
-Ask the account owner to approve a data source a component needs: name (what dataSources and useData will call it), baseUrl (HTTPS, a public host) and reason (shown to the owner). It records a request the owner sees in settings, where they approve it by filling in the details and any secret headers, which you never see. Asking again with the same name replaces the request. Tell the person to approve it in CanvasView settings, then call list_data_sources. Never put secrets in the reason. Free.
+Ask a workspace's Leads (workspace, else your home workspace) to approve a data source a component needs: name (what dataSources and useData will call it), baseUrl (HTTPS, a public host) and reason (shown to them). It records a request they see in settings, where they approve it by filling in the details and any secret headers, which you never see. Asking again with the same name in that workspace replaces the request. Tell the person to have it approved in CanvasView settings, then call list_data_sources. Never put secrets in the reason. Free.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `name` | string matching `^[a-z][a-z0-9-]{1,63}$` | yes | |
 | `baseUrl` | string (1 to 2048 characters) | yes | |
 | `reason` | string (1 to 500 characters) | yes | |
+| `workspace` | string (1 to 64 characters) | no | |
 
 ## list_notifications
 

@@ -49,9 +49,9 @@ the last page leaves or all have been silent for five minutes, and start again w
 ## What a tool can use
 
 - **Data sources**: `fetch("https://<source>.source/<path>?<query>")`. The source must be in the
-  manifest's `sources`, approved by the organization (`list_data_sources`, `request_data_source`) and
+  manifest's `sources`, approved by a Lead of the canvas's workspace (`list_data_sources`, `request_data_source`) and
   declared in the canvas's `dataSources`. CanvasView attaches the secrets; the tool never sees them.
-  Only your Accept and Content-Type headers are kept. Only methods the Admin allowed pass. Redirects
+  Only your Accept and Content-Type headers are kept. Only methods the Lead allowed pass. Redirects
   are refused. Any other host answers 403. At most 20 requests a call, 256 KB a request body.
 - **Its own data**: `this.ctx.storage.kv` (`get(key)`, `put(key, value)`) and
   `this.ctx.storage.sql.exec(...)`, a private SQLite database. It survives new versions of the tool

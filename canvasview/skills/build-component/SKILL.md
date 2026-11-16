@@ -1,6 +1,6 @@
 ---
 name: build-component
-description: Write a custom CanvasView component in TSX when no built-in building block fits, then save it to the account's component library. Covers the source rules, data, shared state, drafting answers, sandbox limits and sizing.
+description: Write a custom CanvasView component in TSX when no built-in building block fits, then save it to the workspace's component library. Covers the source rules, data, shared state, drafting answers, sandbox limits and sizing.
 ---
 
 # Build a component
@@ -26,7 +26,7 @@ every failing component at once, for free.
 ## What the sandbox does not allow
 
 - **No network.** `fetch`, images from URLs and iframes are blocked. Put what the component
-  needs into `data`, or read an owner-approved data source with `useData` (see build-app).
+  needs into `data`, or read a Lead-approved data source with `useData` (see build-app).
 - **Links do not open** (put them in a `Note` node). **No access** to cookies or the parent window.
 - **Long loops are stopped.** A loop that keeps the frame busy for more than about 750 ms
   throws, and a frame that stops responding for 5 seconds is replaced. Keep work small and
@@ -137,9 +137,9 @@ If the component could serve another canvas, save it with `save_component`:
   shared-state keys and answer fields it uses. Search matches on name and description.
 - `exampleData`: a small realistic `data` object (16 KB at most).
 
-Saving checks the source exactly as `create_canvas` does, and saving an existing name replaces
-it. Canvases already using a component keep their own copy. Place it later with
-`{ "kind": "component", "ref": "idea-board", "data": {...} }`.
+Saving checks the source exactly as `create_canvas` does. The library is a workspace's (`workspace`, else your home one): saving a name it has replaces it, and canvases using it keep their own copy.
+Place it on a canvas of that workspace with `{ "kind": "component", "ref": "idea-board", "data": {...} }`.
+`copy_component` copies it into another workspace you are in; the copy is independent of the original.
 
 ## Common mistakes
 

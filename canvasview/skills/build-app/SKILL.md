@@ -1,6 +1,6 @@
 ---
 name: build-app
-description: Build a complete app on a CanvasView canvas from several custom components that share state or open one another (an inbox that opens each email), and give components live data from an outside service through an owner-approved data source. Covers the app contract, the build order, opens and instances, useData and npm packages.
+description: Build a complete app on a CanvasView canvas from several custom components that share state or open one another (an inbox that opens each email), and give components live data from an outside service through a Lead-approved data source. Covers the app contract, the build order, opens and instances, useData and npm packages.
 ---
 
 # Build an app
@@ -90,12 +90,12 @@ A canvas holds 200 instances, a parent 50, each input up to 16 KB. See [inbox.js
 
 ## Live data from a data source
 
-A component can read from (and, if the owner allowed it, write to) a service the account owner
-approved in settings. CanvasView makes the call and adds its secret headers; the frame still has
-no network. Call `list_data_sources` for the names, hosts and methods; if one is missing, call
-`request_data_source` and ask the person to approve it. You cannot create a source or see secrets.
+A component can read from (and, if allowed, write to) a service a Lead of the canvas's workspace
+approved in its settings; a canvas reaches only its own workspace's sources. CanvasView makes the
+call and adds its secret headers; the frame still has no network. Call `list_data_sources` for the names, hosts and methods; if one is missing, call
+`request_data_source` and ask a Lead to approve it. You cannot create a source or see secrets.
 Declare each source the canvas uses, `"dataSources": ["orders"]`, or the write fails with
-`unknown_data_source`. A request shows in the owner's notifications as an action item;
+`unknown_data_source`. A request shows in the Leads' notifications as an action item;
 `list_notifications` (read-only) tells you whether it is still waiting, or that a source a canvas
 declares was removed.
 
@@ -104,11 +104,11 @@ the source through CanvasView. Tell the person their viewers will sign in, and s
 only when they ask for an open link.
 
 Writes (POST, PUT, PATCH, DELETE) need someone the owner named: a person invited as participant or
-above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only
+above, a member who has the canvas through its visibility, the owner, a Lead or an Admin. Anyone with only
 the link, signed in or not, and anyone invited as a viewer, can read and is refused a write with
 `invite_required` or `forbidden`. A button that writes is for invited people. On a public canvas,
 collect answers or shared state instead, and act on them yourself or with a tool. Each write is
-recorded for the canvas's owner and Admins with who sent it, the source, the method, the path and the
+recorded for the canvas's managers with who sent it, the source, the method, the path and the
 status (`get_action_log`); never the query or the body.
 
 ```tsx

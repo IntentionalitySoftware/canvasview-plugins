@@ -74,6 +74,16 @@ Nothing is charged when a call fails these checks or fails validation.
 - `canvas_not_found`: wrong ID, another account's canvas, or expired long ago. Use `list_canvases`.
 - `read_only` on `set_canvas_state`: the canvas is no longer active.
 
+## Workspaces
+
+- `not_in_workspace`: your key's person is not in the `workspace` you named. Call `list_workspaces`
+  and use one whose `role` is not null, or leave `workspace` out to act in your home workspace.
+- `workspace_not_found`: no workspace has that id or slug. Use one from `list_workspaces`.
+- `component_exists` from `copy_component`: the other workspace already has a component of that
+  name. Ask the person which to keep; delete the one there first only if they say so.
+- `unknown_data_source` when moving a canvas with `update_canvas { id, workspace }`: the target
+  workspace has no source of a name the canvas declares. Ask a Lead there to add it.
+
 ## Signing in
 
 - `unauthorized`: the connection is not signed in. Ask the person to sign in again from their

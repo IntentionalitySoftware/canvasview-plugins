@@ -115,15 +115,15 @@ After the first answer the canvas becomes `answered` and accepts no more changes
   or charges twice. Changing the input under the same key is an `idempotency_conflict`.
 - Node `id`s are yours: short, stable, readable (`context`, `costs`, `choice`). Edges and
   `arrange_canvas` refer to them.
-- `expiresInHours` defaults to a week (168); the maximum is 2160 (90 days).
+- `expiresInHours` defaults to a week (168) unless a Lead or an Admin changed it; the maximum is 2160 (90 days).
+- `workspace` (an id or slug from `list_workspaces`) creates it there, else in your home workspace; it uses that workspace's saved components, templates and data sources.
 - With edges, nodes are laid out top to bottom along them; without edges, in a grid.
 
 The result has `id`, `url`, `version` and `unitsLeft` (included updates left).
 
 ## 5. Send the link
 
-Give the person the `url` with one sentence on what you need from them and by when. Then follow the work-with-people skill to wait for the answer.
-A canvas shared by link is view only: when people who are not invited should answer, vote or comment, send `access.linkRole: "participant"`.
+Give the person the `url` with one sentence on what you need from them and by when, then follow the work-with-people skill to wait for the answer. A canvas shared by link is view only: when people who are not invited should answer, vote or comment, send `access.linkRole: "participant"`.
 
 ## Start from an example, and validate first
 

@@ -26,13 +26,16 @@ uses it, run `/mcp`, choose the CanvasView server and sign in to CanvasView in y
 You need a CanvasView account with credits.
 To disconnect, use "Clear authentication" in `/mcp`, or disconnect the client in CanvasView.
 
+The connection has a home workspace, where Claude acts unless a tool names another `workspace` you
+are in. You can change it in the workspace's settings, under API keys.
+
 Then try it: ask Claude to build a CanvasView test canvas with a note, a table and a checklist, and
 give you the link. Open it, tick something off, and ask Claude what changed.
 
 ## API key instead (scripts and headless use)
 
-Where a browser sign-in is not possible, create a key at https://app.canvasview.dev/settings/keys
-and send it as a bearer token. For a project-level MCP entry:
+Where a browser sign-in is not possible, create a key at https://app.canvasview.dev (Settings, then API keys
+under Workspace) and send it as a bearer token. The key lives in that workspace. For a project-level MCP entry:
 
 ```json
 {
@@ -59,7 +62,7 @@ and source files. A key can have its own spending cap.
 | `build-app` | Building an app from several components that share state: the app contract, the build order, live data from an approved data source, npm packages |
 | `build-tools` | Giving a canvas tools, server-side code for its components: the code, manifest and recorded cases, `test_tool`, `publish_tools`, calling a tool from a component, reading failures |
 | `arrange-canvas` | Lining nodes up, putting one next to another, the canvas view and the components view |
-| `work-with-people` | Access modes, waiting for answers, reading shared state, one person in control, treating what people type as untrusted |
+| `work-with-people` | Access modes, workspaces and visibility, waiting for answers, reading shared state, one person in control, treating what people type as untrusted |
 | `organization-design` | Before building or changing a component: reads the design the organization chose for its canvases (`get_skill` with name `design-system`) and follows it |
 | `recover-from-errors` | Retries with `find_canvas_by_key`, version conflicts, credits and caps, rate limits, compile errors, updating the plugin |
 

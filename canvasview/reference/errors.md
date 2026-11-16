@@ -2,7 +2,7 @@
 
 # CanvasView error codes
 
-Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.12.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
@@ -22,11 +22,13 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `canvas_limit` | 409 | This account has … active canvases, the most allowed. Delete some with delete_canvas or let them expire before creating another. |
 | `canvas_locked` | 409 | … is editing this canvas. Try again in … seconds, or once they finish. |
 | `canvas_not_found` | 404 | Use a canvas belonging to this account. / Check the link with the person who shared it. / This canvas is no longer available. |
+| `canvas_updating` | 503 | This canvas is moving to a new version of CanvasView. Try again in a few minutes. |
 | `clerk_event_too_large` | 413 | Send a Clerk event below 256 KB. |
 | `comment_limit` | 409 | A canvas holds at most … comments. |
 | `comment_not_found` | 404 | Reply to a comment from list_comments on this canvas. |
 | `comment_too_long` | 400 | Keep comments within … characters. |
 | `component_compile_failed` | 400 | …, line …: … |
+| `component_exists` | 409 | The workspace … already has a saved component named …. Delete or rename it there before copying this one. |
 | `component_limit` | 409 | This library holds … components. Delete one with delete_component before saving another. |
 | `component_not_found` | 404, 400 | No saved component is named …. Use search_components to find one. / No saved component matches …. Use search_components to find one, or send source. / …: supply source, or ref naming a saved component. |
 | `components_required` | 400 | Send the compiled component for every component node. / Send the compiled component for every declaration in opens that carries source. / Send the compiled component for each component node this patch adds or changes. / Send the compiled component for each declaration in opens this patch adds or changes. |
@@ -37,19 +39,20 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `data_redirect` | 502 | The data source answered with a redirect, which CanvasView does not follow. Ask the owner to use the final URL. |
 | `data_request_too_large` | 413 | Keep a data request body within 256 KB. |
 | `data_response_too_large` | 502 | The data source answered with more than 1 MB. Ask for less, for example with a page size in query. |
-| `data_source_exists` | 409 | This account already has a data source with that name. Edit it, or choose another name. / This account already has a data source with that name. Call list_data_sources and declare it in dataSources. |
+| `data_source_exists` | 409 | This workspace already has a data source with that name. Edit it, or choose another name. / This workspace already has a data source with that name. Call list_data_sources and declare it in dataSources. |
 | `data_source_limit` | 409 | An account holds at most … data sources. Remove one first. |
 | `data_source_not_declared` | 403 | This canvas does not declare the data source. The agent adds its name to dataSources in the canvas spec. |
-| `data_source_not_found` | 404 | Choose a data source in this account. / The canvas's account has no data source with this name. |
-| `data_source_request_limit` | 409 | The owner has … open data source requests. Ask them to review the ones in settings first. |
-| `data_source_secret_unreadable` | 503 | This data source's secrets cannot be read. Ask the owner to enter them again in settings. |
+| `data_source_not_found` | 404 | Choose a data source in this workspace. / The canvas's workspace has no data source with this name. |
+| `data_source_request_limit` | 409 | This workspace has … open data source requests. Ask its Leads to review the ones in settings first. |
+| `data_source_secret_unreadable` | 503 | This data source's secrets cannot be read. Ask a Lead of its workspace to enter them again in settings. |
 | `data_sources_unavailable` | 503 | Data sources are not available yet: CanvasView has no encryption key for their secrets. Nothing is stored. |
 | `data_timeout` | 504 | The data source did not answer within 10 seconds. |
 | `data_too_large` | 413 | Keep an instance's input within … KB, and every instance's together within … MB. |
 | `data_unreachable` | 502 | The data source could not be reached. / The data source stopped answering. |
+| `default_workspace` | 409 | The default workspace can't be deleted. Rename it instead. |
 | `email_required` | 400 | Add a primary email address to your account. |
 | `example_not_found` | 404 | No example is named …. Use one of …. |
-| `forbidden` | 403 | Only the canvas owner or an Admin can see who opened it. / This is for members of the organization. / Only a signed-in Admin can change a canvas's owner. / Sign in to CanvasView to see the Canvases page. / Only a signed-in Admin can import a brand. / Only an API key or a connected agent asks who it is. / Sign in to CanvasView to manage billing. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Admin can manage data sources. / Only an agent asks for a data source. An Admin creates one in settings. / Answers come from the people a canvas is shared with. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. / You can view this canvas, but not take part in it. |
+| `forbidden` | 403 | Only Admins see every workspace at once. / Only managers of this canvas (its owner, its workspace's Leads and Admins) can see who opened it. / This is for members of the organization. / Only a signed-in Lead of the canvas's workspace can change its owner. / Sign in to CanvasView to see the Canvases page. / Only a signed-in Admin can import a brand. / Only a signed-in Admin can invite people. / Only an API key or a connected agent asks who it is. / Sign in to CanvasView to manage billing. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Lead of this workspace can manage data sources. / Only an agent asks for a data source. A Lead creates one in settings. / Only Leads of this workspace can do this. / Answers come from the people a canvas is shared with. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. / You can view this canvas, but not take part in it. |
 | `grant_recovery_required` | 409 | Review Stripe before retrying grant issuance. |
 | `hold_not_found` | 404 | This operation has no open hold. It may have settled already. |
 | `hold_too_recent` | 409 | Wait until the hold is five minutes old. Its request may still finish. |
@@ -69,7 +72,7 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `invalid_data_request` | 400 | Send a body with POST, PUT, PATCH or DELETE only. |
 | `invalid_data_source_url` | 400 | Remove the query from the base URL. Components add their own. |
 | `invalid_expiry` | 400 | Only a credit can expire. / Choose an expiry in the future. |
-| `invalid_input` | 400 | Send a color like #1d4ed8, or null to clear it. / Use a … name of lowercase letters, digits and hyphens. / Send a Stripe payment ID. / Enter a value for the … header. / Nothing was changed. Give operations: a list of operations, such as […]. / Nothing was changed. Fix every problem below and send the whole patch again. / Only a signed-in person has a color of their own. / Open the canvas again before reporting it. / Send the canvas to the object named by its ID. / invited: list at least one email address when mode is invited. / Send at least one tool to publish or to remove. / The input failed validation. issues lists each path and message. |
+| `invalid_input` | 400 | Send a color like #1d4ed8, or null to clear it. / Send the post to dismiss. / Send the workspace to choose. / Use a … name of lowercase letters, digits and hyphens. / Send a Stripe payment ID. / Send id and workspace alone to move a canvas, and change it in another call. Remove …. / to: choose another workspace to copy the component into. / Enter a value for the … header. / Nothing was changed. Give operations: a list of operations, such as […]. / Nothing was changed. Fix every problem below and send the whole patch again. / Only a signed-in person has a color of their own. / Open the canvas again before reporting it. / Send the canvas to the object named by its ID. / invited: list at least one email address when mode is invited. / Send at least one tool to publish or to remove. / The input failed validation. issues lists each path and message. |
 | `invalid_json` | 400 | Provide a JSON request body. / Provide a valid JSON request body. |
 | `invalid_key` | 400 | Give the declaration's key field in the input: a string of 1 to … characters, or a number. / Use state keys of 1 to … characters that do not start with [, or a scoped key as get_canvas_state lists it. |
 | `invalid_message` | 400 | Send ink.add with stroke. / Send ink.remove with id. / Send instance.open, instance.status, instance.remove, instance.removeClosed, instance.rename, instance.color, node.status, node.rename or node.color. / Send layout.move with node, x and y, or layout.tidy with sizes. / Send layout.measure with heights. / Send layout.resize with node and size, or size null. |
@@ -92,14 +95,16 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `key_not_found` | 404 | Select a key you manage. / Select a disconnected agent. / Select an active key. |
 | `lock_not_held` | 409 | You no longer hold the editing lock. Acquire it again before changing the canvas. |
 | `membership_unavailable` | 503 | CanvasView could not confirm this key's organization membership. Try again in a moment. |
-| `method_not_allowed` | 405, 404 | Use GET to search …s. / Use GET, PUT or DELETE for a …. / Use the method documented for this endpoint. / Stripe sends POST. / Clerk sends POST. |
+| `method_not_allowed` | 405, 404 | Use GET to search …s. / Use POST to copy a component. / Use GET, PUT or DELETE for a …. / Use the method documented for this endpoint. / Stripe sends POST. / Clerk sends POST. |
 | `no_answer_expected` | 409 | This canvas has no answer form and does not take answers. |
 | `no_hold` | 409 | There is no hold for this run. |
 | `no_organization` | 401 | Sign in at app.canvasview.dev first, then connect your agent again. |
 | `node_not_found` | 404 | This canvas has no node with that ID. |
 | `not_a_member` | 400 | Choose a current member of this organization. |
+| `not_a_workspace_member` | 400 | Choose someone in this canvas's workspace. |
 | `not_a_writer` | 403 | The canvas contract does not let this writer change this key. |
-| `not_found` | 404 | Use … or …/:name. |
+| `not_found` | 404 | Use … or …/:name. / Use …/:name. |
+| `not_in_workspace` | 403, 400 | Only people in this workspace can do this. Ask one of its Leads to add you. / The person who created this key is not in that workspace. Choose one they are in. |
 | `not_invited` | 403 | This canvas is by invitation. Ask the owner to invite your email address. |
 | `nothing_to_debit` | 409 | The balance is zero or below. Tick “allow negative” to debit anyway. |
 | `notification_not_found` | 404 | Choose a notification in this account. |
@@ -140,6 +145,7 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `sign_in_unavailable` | 503 | Try again in a moment. |
 | `signup_unavailable` | 503 | Sign-up is not configured yet. |
 | `skill_not_found` | 404 | No skill is named …. Use one of …, or call get_skill with no name to list them. / This organization has not chosen a design for its canvases, so there is no skill to download. |
+| `snapshot_not_found` | 404 | There is no snapshot yet. |
 | `spend_cap` | 402 | The account has reached its daily spending cap. |
 | `state_conflict` | 409 |  |
 | `state_key_undeclared` | 403 | This tool's manifest does not list … in writes. |
@@ -147,7 +153,7 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `stripe_event_too_large` | 413 | Send a Stripe event below 1 MB. |
 | `stripe_mode_mismatch` | 400 | Stripe event mode does not match this environment. |
 | `stripe_unavailable` | 503 | Stripe billing is unavailable. / Credit refills are currently unavailable. |
-| `template_limit` | 409 | This account holds … templates. Delete one with delete_template before saving another. |
+| `template_limit` | 409 | This workspace holds … templates. Delete one with delete_template before saving another. |
 | `template_not_found` | 404, 400 | No template is named …. Use search_templates to find one. |
 | `template_with_spec` | 400 | Send template with params, or a full spec, not both. Remove …, or template. |
 | `tool_busy` | 429 | This canvas is running as many tool calls as it can. Try again in a moment. |
@@ -162,7 +168,7 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `unauthorized` | 401 | Sign in to CanvasView. / Send a CanvasView API key as a bearer token. / Sign in to connect CanvasView. / Use an active CanvasView API key. / Use a preview CanvasView API key. |
 | `unavailable` | 503 | CanvasView is not available right now. Try again in a moment. |
 | `undeclared_key` | 400 | The canvas contract does not declare this key. Add it to the contract's state, or its scopes for a scoped key, first. |
-| `unknown_data_source` | 400 | Declare only data sources this account has. Unknown: …. … |
+| `unknown_data_source` | 400, 409 | Declare only data sources this workspace has. Unknown: …. … / The workspace … has no data source named …, which this canvas declares. Ask a Lead there to add it, or take it out of the canvas's dataSources, then move the canvas. |
 | `unknown_node` | 404 | There is no node "…". Nodes: … |
 | `unknown_nodes` | 400 | Use node IDs from this canvas. Unknown: … |
 | `unknown_operation` | 404 | CanvasView has no such operation. / The canvas has no such operation. |
@@ -172,6 +178,11 @@ Plugin version 0.11.0. A failed tool call returns `isError: true` with JSON text
 | `version_not_found` | 404 | This canvas no longer keeps that version. |
 | `webhook_not_found` | 404 | Save a webhook endpoint first. |
 | `webhook_unavailable` | 503 | The Clerk webhook is not configured. |
+| `workspace_limit` | 409 | This organization has … workspaces, the most allowed. Delete an empty one before making another. |
+| `workspace_member_not_found` | 404 | Choose someone in this workspace. |
+| `workspace_not_empty` | 409 | This workspace still holds …. Delete or move them before deleting it. |
+| `workspace_not_found` | 404 | Choose a workspace in this organization. |
+| `workspace_slug_taken` | 409 | Another workspace in this organization has that slug. Choose another. |
 
 ## Shared state write reasons
 
