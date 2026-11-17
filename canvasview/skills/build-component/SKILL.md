@@ -47,6 +47,7 @@ every failing component at once, for free.
 | Something only this viewer is typing | React `useState` |
 | Fill the answer panel | `useDraft()` |
 | Ask the person to confirm and send an answer now | `useSubmit()` |
+| Have the owner's agent act outside the canvas (send an email) | `useMessages()`, see the messages skill |
 
 - `useSharedState` returns `[value, setValue, { error }]`. Values are JSON, synced live to
   everyone and kept across reloads. Use an updater (`setValue((current) => ...)`) when the new
@@ -118,8 +119,7 @@ return <>
 </>;
 ```
 
-A path is `/` or lowercase words with hyphens, with no parameters. The open page is each
-viewer's own. A person can open one page full window at `/c/<canvas>/<node>/<path>`.
+A path is `/` or lowercase words with hyphens, with no parameters. The open page is each viewer's own. A person can open one page full window at `/c/<canvas>/<node>/<path>`.
 
 ## Sizing
 

@@ -6,7 +6,8 @@ description: Build a complete app on a CanvasView canvas from several custom com
 # Build an app
 
 An app is several component nodes on one canvas that work together. Write each component as the
-build-component skill describes; this skill covers what holds them together.
+build-component skill describes; this skill covers what holds them together. For a button that
+has your agent send an email or post outside the canvas, see the messages skill.
 
 ## Several components, one contract
 
@@ -83,7 +84,7 @@ by the parent and all under it; `useCanvasState` is canvas-wide, as the parent's
 reads each email's with `useOpenedState("email", "draft")`. Removing an instance erases its keys; a contract declares them in `scopes`.
 
 What people open is live state: no version, no charge. `get_canvas` lists `instances` with their data and
-`nodeStatus`; `wait_for_event` wakes on `instance.changed`. `change_instances` opens, closes, removes, renames
+`nodeStatus`; `wait_for_message` wakes on `canvas.instance_changed`. `change_instances` opens, closes, removes, renames
 and colors instances and nodes: a color (`#rrggbb`, set there once the canvas exists, never in the spec) is a
 soft shadow whose meaning is yours to say, such as who an item is for. `remove_node` takes its instances and state.
 A canvas holds 200 instances, a parent 50, each input up to 16 KB. See [inbox.json](../../examples/inbox.json), which lists the reader to save first.
@@ -146,4 +147,3 @@ exact versions and import them:
 - CanvasView bundles the packages when the canvas is saved; at most 3 MB per component. The first
   use of a large package takes a few seconds; later canvases reuse the bundle.
 - Package code runs only inside the sandbox, so the rules below apply to it too: no network.
-

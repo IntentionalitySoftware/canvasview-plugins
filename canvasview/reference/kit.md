@@ -2,7 +2,7 @@
 
 # CanvasView kit reference
 
-Plugin version 0.12.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.13.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
@@ -36,6 +36,7 @@ A component can open other components on the canvas, for everyone, such as an in
 
 ## Functions
 
+- `messageStatus`: Call messageStatus(message) with a message from useMessages for the line a person reads: Waiting for approval, Waiting for an agent, Claimed by Dana, via Release bot, Done, Failed, Expired or Cancelled.
 - `fetchData`: Call await fetchData(source, { path, query?, method?, body?, headers? }) for one request, for example a write when someone presses a button. It resolves with { status, ok, contentType, text, data? } whatever status the source answered with, and rejects with an error carrying a code when CanvasView refuses the call. method is GET unless the owner allowed POST, PUT, PATCH or DELETE on the source, which work on active canvases only. A write needs someone the owner named: a person invited as participant or above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only the link, signed in or not, and anyone invited as a viewer is refused with invite_required or forbidden; reads still work for them. On a public canvas, collect answers or shared state and let the organization's agent act on them. A string body is sent as text and anything else as JSON. headers may set Content-Type and Accept only; CanvasView adds the source's secret headers, which a component never sees.
 
 ## Data sources
@@ -76,6 +77,7 @@ Nodes are placed automatically: flow (top to bottom along edges) when the canvas
 - [`StatusList`](#statuslist) (widget `status-list@1`)
 - [`RouteLink`](#routelink)
 - [`canvas`](#canvas) (object)
+- [`useMessages`](#usemessages) (hook)
 - [`useOpen`](#useopen) (hook)
 - [`useOpened`](#useopened) (hook)
 - [`useTool`](#usetool) (hook)
@@ -442,6 +444,9 @@ The canvas a component runs on. await canvas.tools.<name>(input) calls one of th
 | `tools` | Record<string, (input?: object) => Promise<output>> | yes | One function per tool, by the tool's name. input is a JSON object that fits the tool's input schema, up to 64 KB; default {}. The output fits the tool's output schema. |
 | `open` | (type: string, input: object) => Promise<{ id, type, key, status }> | yes | Opens one of the types the node declares in opens, beside it, for everyone. input becomes the opened component's data and must hold the declaration's key field. Opening a key that is already there gives back that instance with input as its new data, restored if it was minimized or closed. Rejects with an Error whose reason is open_unavailable (the node does not declare the type, or nothing can be opened here), invalid_key (the input lacks the declaration's key field: a string of 1 to 200 characters or a number), data_too_large (more than 16 KB of input), instance_limit (200 instances on a canvas, or 50 under one parent), not_found, read_only (the person only views the canvas, or it is closed), invite_required (the person has only the link, and the declaration says access named, or it is a removal), open_timeout, open_failed, offline or rate_limit. |
 | `remove` | (type: string, key: string \| number) => Promise<void> | yes | Removes one of this component's own instances of a type, by its key, for someone the owner named (invite_required for anyone else), with everything it opened and its state, for everyone. For example when an email is deleted from the inbox's list. Rejects with the same reasons as open; not_found when it is not there. |
+| `send` | (type: string, payload: object) => Promise<message> | yes | Sends a message of a type the node declares in messages to the canvas's owner, whose own agent claims it, does the work with its own tools (sends the email, fetches the mail) and records the result: see useMessages and the messages skill. payload must fit the type's payload schema. Resolves with the message ({ id, type, status, ... }). Only someone the owner named may send. Rejects with an Error whose reason is send_unavailable (the node does not declare the type), invalid_payload (it does not fit the payload schema, or is over 64 KB), read_only (the person only views the canvas, or it is closed), invite_required (the person has only the link), not_found, message_settled, send_timeout, send_failed, offline or rate_limit. |
+| `approve` | (id: string) => Promise<message> | yes | Approves a message whose type needs approval: approval sender lets its sender approve it, approval owner the canvas's owner. An agent cannot claim it before. Put the button in the component, beside what will happen. |
+| `cancel` | (id: string) => Promise<message> | yes | Cancels a message before it is done: its sender or the canvas's owner. |
 
 Example:
 
@@ -453,6 +458,28 @@ try {
 } catch (error) {
   // error.reason is a code such as tool_unavailable
 }
+```
+
+### useMessages
+
+Call useMessages({ type }) to get { messages, send, pending, error, available } for a type the node declares in messages (BUILD-243): what this component sends to the canvas's owner's agent and what became of it. messages are the ones this node sent that this person may see (the canvas's managers see everyone's, anyone else their own), newest first, each { id, type, status, payload, result?, reason?, from: { name }, approval: { needs, approvedBy?, approvedAt? }, claim: { person, agent, until } or null, createdAt, updatedAt, expiresAt }, live as the agent claims and completes them. status is open, claimed, done, failed, expired or cancelled; show it with messageStatus(message). send(payload) sends one and resolves with it, or with undefined after setting error; it never rejects. Without type, messages are all of the node's. available is false when the node does not declare the type or this person may not send now (someone with only the link): render ToolUnavailable in its place.
+
+| Argument | Type | Required | Description |
+| --- | --- | --- | --- |
+| `type` | string | no | A type the node declares in messages, such as email.send. |
+
+Example:
+
+```tsx
+import { canvas, messageStatus, useMessages } from "@canvasview/kit";
+
+const { messages, send, pending, available } = useMessages({ type: "email.send" });
+const last = messages[0];
+return <>
+  <button disabled={!available || pending} onClick={() => send({ to, subject, body })}>Send</button>
+  {last && <p>{messageStatus(last)}</p>}
+  {last?.status === "open" && last.approval.needs === "sender" && !last.approval.approvedAt && <button onClick={() => canvas.approve(last.id)}>Approve</button>}
+</>;
 ```
 
 ### useOpen

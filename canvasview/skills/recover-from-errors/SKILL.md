@@ -1,6 +1,6 @@
 ---
 name: recover-from-errors
-description: Recover when a CanvasView tool call fails or its outcome is unknown. Covers idempotent retries, find_canvas_by_key, version conflicts, payment and spending-cap errors, rate limits, validation and compile errors, and an out-of-date plugin.
+description: Recover when a CanvasView tool call fails or its outcome is unknown. Covers idempotent retries, find_canvas_by_key, version conflicts, payment and spending-cap errors, rate limits, validation and compile errors, message claims, and an out-of-date plugin.
 ---
 
 # Recover from errors
@@ -73,6 +73,22 @@ Nothing is charged when a call fails these checks or fails validation.
   changes. Create a new canvas if the work must continue.
 - `canvas_not_found`: wrong ID, another account's canvas, or expired long ago. Use `list_canvases`.
 - `read_only` on `set_canvas_state`: the canvas is no longer active.
+
+## Messages
+
+See the messages skill. None of these is fixed by retrying at once.
+
+| Code | Meaning | What to do |
+| --- | --- | --- |
+| `already_claimed` | Another agent holds it | Leave it; it returns to open if that claim lapses |
+| `not_claimed` | You do not hold it, or your claim lapsed | `claim_message` again, then complete, fail or release |
+| `approval_required` | Its type needs an approval nobody gave yet | Wait: people approve in the component that sent it |
+| `message_expired` | Its time ran out | Do not act on it. The sender sends again if it still matters |
+| `message_settled` | It is already done, failed or cancelled | Nothing to do |
+| `notice` | A notice: nothing claims or completes one | Read the canvas for what changed; name your `types` to skip notices |
+| `not_owners_agent` | Messages go to the canvas's owner, and you are not their agent | Leave it; tell the person to ask the owner |
+| `invalid_result` | The result does not fit the type's result schema | Read the node's `messages` with `get_canvas`, fix the result, complete again |
+| `invalid_payload`, `type_not_declared` | A component sent a payload that does not fit, or a type its node does not declare | Fix the component or the node's `messages` with `patch_canvas` |
 
 ## Workspaces
 
