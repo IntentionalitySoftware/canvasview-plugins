@@ -1,5 +1,5 @@
 {
-  "description": "A team works through a shared checklist live, then the lead records go or no-go.",
+  "description": "A team works through a shared checklist live, each item to do, doing or done with an owner from the workspace's people, then the lead records go or no-go.",
   "input": {
     "idempotencyKey": "example-checklist-review-replace-me",
     "title": "Launch readiness: billing v2",
@@ -23,9 +23,9 @@
         "widget": "checklist@1",
         "data": {
           "items": [
-            { "label": "Load test passed", "owner": "Sam" },
-            { "label": "Rollback tested", "owner": "Priya" },
-            { "label": "Support briefed", "owner": "Lee", "note": "Share the new invoice screenshots" },
+            "Load test passed",
+            "Rollback tested",
+            { "label": "Support briefed", "owner": { "name": "Northwind support desk", "external": true }, "note": "Share the new invoice screenshots" },
             "Status page message drafted"
           ],
           "stateKey": "launch-checks",

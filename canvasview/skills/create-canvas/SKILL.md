@@ -66,7 +66,7 @@ empty value would not make a valid canvas.
 | A message thread to read; results of checks | `Conversation` (`conversation@1`); `StatusList` (`status-list@1`) |
 | Pick one option | `Decision` (`decision@1`) |
 | A few typed fields | `SchemaForm` (`form@1`) |
-| Tick off items | `Checklist` (`checklist@1`) |
+| Tasks with owners, to do, doing, done | `Checklist` (`checklist@1`), or `Board` (`board@1`) for cards in columns |
 | Approve or reject a statement | `Approval` (`approval@1`) |
 | Explore numbers live | `Calculator` (`calculator@1`) |
 
@@ -83,7 +83,7 @@ answer panel when you give them `field`. Every `field` must be declared in `answ
 
 - `Decision` with `field: "choice"` → `choice` as a string, ideally an `enum` of the option values.
   With `requireReason: true` it also drafts `choiceReason`; declare that too.
-- `Checklist` → an `array` with `items: { "type": "integer" }` (the ticked indexes).
+- `Checklist` → an `array` with `items: { "type": "integer" }` (the indexes of the items done). People pick owners of its items and of `Board` cards from the workspace's people; to set one, give `owner` a person: `{ "id", "name" }` with an `id` from `list_canvas_people`, or `{ "name": "Acme legal", "external": true }` for an outsider. A plain name is refused.
 - `Approval` and `Calculator` → an `object`.
 - `SchemaForm` → an `object` in `field`, or with `spread: true` one answer field per property.
 

@@ -5,9 +5,7 @@ description: Write a custom CanvasView component in TSX when no built-in buildin
 
 # Build a component
 
-A component node runs your TSX in a sandboxed frame on the canvas. Write one only after
-`search_components` found nothing to reuse and no building block fits (see the create-canvas skill).
-For components that work together, call outside services or import npm packages, see the build-app skill.
+A component node runs your TSX in a sandboxed frame on the canvas. Write one only after `search_components` found nothing to reuse and no building block fits (see the create-canvas skill). For components that work together, call outside services or import npm packages, see the build-app skill.
 
 ## The rules the server checks
 
@@ -18,10 +16,7 @@ For components that work together, call outside services or import npm packages,
   (see below). No dynamic `import()`, no `require`. Do not name anything `require` or `exports`.
 - At most 64 KB of source. The whole canvas, data included, must stay under 1 MB.
 
-A violation fails the create with `component_compile_failed` and a message such as
-`ideas, line 3: Import only react or @canvasview/kit, not "lodash".` followed by the kit's exports.
-Nothing is charged; fix the line and retry with the same idempotency key. `validate_canvas` reports
-every failing component at once, for free.
+A violation fails the create with `component_compile_failed` and a message such as `ideas, line 3: Import only react or @canvasview/kit, not "lodash".` followed by the kit's exports. Nothing is charged; fix the line and retry with the same idempotency key. `validate_canvas` reports every failing component at once, for free.
 
 ## What the sandbox does not allow
 
@@ -48,6 +43,7 @@ every failing component at once, for free.
 | Fill the answer panel | `useDraft()` |
 | Ask the person to confirm and send an answer now | `useSubmit()` |
 | Have the owner's agent act outside the canvas (send an email) | `useMessages()`, see the messages skill |
+| Assign someone on the team, show who is assigned, "use our organization" | `uses: ["members"]` on the node, `useMembers()`, `PersonPicker`, below |
 
 - `useSharedState` returns `[value, setValue, { error }]`. Values are JSON, synced live to
   everyone and kept across reloads. Use an updater (`setValue((current) => ...)`) when the new
@@ -60,6 +56,10 @@ every failing component at once, for free.
 - `useDraft()` and `useSubmit()` may return nothing outside a canvas; call them as `draft?.(...)`.
   The drafted object's fields must be declared in the canvas `answerSchema`.
 - Prefer `draft` to `submit`. Drafting lets the person review the answer panel and send it.
+
+## People from the organization
+
+When asked to assign people or to "use our organization", declare `uses: ["members"]` on the node: without it the component gets no people, and a source that imports `useMembers` or `PersonPicker` is refused at `nodes[i].source`. `useMembers()` gives the canvas's people (its workspace's members and the people invited to it), each `{ id, name, color }`. Store a **person value**, never a typed name: `{ id, name }`, or `{ name, external: true }` for someone outside the organization, who gets no access. `PersonPicker` chooses one person (several with `multiple`) with search and takes a typed name; `PersonChip` shows a stored person with their current name and color; `useViewer().isMe(value)` is for "Assigned to you" or a Mine filter. Someone with only the link sees only the people already assigned, and viewers cannot change owners. Read the list yourself with `list_canvas_people`; the kit reference's "The organization's people" has an example.
 
 ## One person in control
 

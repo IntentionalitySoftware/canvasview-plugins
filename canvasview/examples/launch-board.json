@@ -37,9 +37,9 @@
           "columns": ["To do", "Doing", "Done"],
           "stateKey": "launch-board",
           "cards": [
-            { "text": "Final pricing copy", "column": "Doing", "owner": "Dana" },
-            { "text": "Record the demo video", "column": "To do" },
-            { "text": "Brief the support team", "column": "Done", "owner": "Sam" }
+            { "text": "Final pricing copy", "column": "Doing" },
+            { "text": "Record the demo video", "column": "To do", "owner": { "name": "Studio Nine", "external": true } },
+            { "text": "Brief the support team", "column": "Done" }
           ]
         }
       }

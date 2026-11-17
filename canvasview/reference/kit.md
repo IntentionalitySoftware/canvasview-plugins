@@ -2,7 +2,7 @@
 
 # CanvasView kit reference
 
-Plugin version 0.13.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.14.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
@@ -20,6 +20,10 @@ A component can have several pages. Declare them on the node as routes: [{ path,
 
 A component can open other components on the canvas, for everyone, such as an inbox that opens an email beside it. Declare what a component node can open in its opens: { <type>: { ref, key, access?, size?, opens? } }, at most 10 types. type is a short name the component opens by, such as email. ref names a saved component (save_component first); its source is copied into the declaration when the canvas is saved, so later changes to the saved component or deleting it leave the canvas as it is, and get_canvas returns it as source beside ref. Send ref alone to take the saved component's current source. key names the field of the input that identifies each instance, such as emailId: one instance per key per parent, so opening the same email again focuses the one that is there, gives it the new input as its data, and restores it if it was minimized or closed. Anyone who can open the canvas may open, minimize, restore and close these, people with only the link included; access: "named" keeps that to people the owner named (invited as participant or above, members, the owner, Admins). Removing one always needs someone the owner named. size: { width 160-1600, height 80-1200 } is what it opens at, as a node's size: the width holds and it grows to fit its content; without it, 320 wide. opens inside a declaration is what the opened component can open in turn, 3 levels deep. In the component, call useOpen(type) or await canvas.open(type, input); input becomes the opened component's data. useOpened(type) lists the component's own instances with their status, live. canvas.remove(type, key) takes one off the canvas and erases it. Inside the opened component, useInstance() gives its key and its parent. Shared state is scoped by the same relationship: inside an opened component useSharedState keys are that instance's own, useFamilyState keys are shared with the core node it descends from and every instance of that node, and the parent reads a key of each of its instances with useOpenedState(type, key); a core node's plain useSharedState stays canvas-wide. Closing an instance keeps its keys, removing one erases them (and those of what it opened), so opening its key again starts empty. A component can open only the types its node declares; anything else is refused at once. Opening is free and never a new version. An instance is drawn beside its parent in the same frame as a node, with its type and key on its tab, can be dragged and resized by its corner, and opens on its own page at /c/<canvas>/<instance id>. Example node: { id: "inbox", kind: "component", ref: "inbox-list", data: { emails }, opens: { email: { ref: "email-reader", key: "emailId" } } }.
 
+## The organization's people
+
+When someone asks for a component that assigns people, or to "use our organization", declare uses: ["members"] on its node and call useMembers. The canvas then gives the component its people: the members of the canvas's workspace with the organization's Admins, then the people invited to the canvas who have opened it signed in, each { id, name, color }. id is the person's id on this canvas, the same as a signed-in viewer's participant id; it is never a user id or an email. A node without the declaration is given nothing, and create_canvas, update_canvas, patch_canvas and validate_canvas refuse a component that imports useMembers or PersonPicker without it, at nodes[i].source. What the node opens is given what the node is given. Store a person value, never a typed name: { id, name } for one of the people, or { name, external: true } for someone outside the organization (a customer, a contractor), who has no account, no color of their own and no access: assigning them gives them nothing. Choose with PersonPicker (one, or several with multiple), show with PersonChip, which draws the person's current name and color, and ask useViewer whether a value is the viewer. Who sees the list: members and people invited to the canvas see all of it; someone who has the canvas by its link only sees only the people already assigned on it, never the organization's list, and never anyone's email. Only someone who may change the canvas's shared state may assign. An agent reads the people with list_canvas_people and writes person values with set_canvas_state, or in a Checklist's or Board's data. Example node: { id: "review", kind: "component", uses: ["members"], source, data }, with source: import { PersonChip, PersonPicker, useSharedState, useViewer } from "@canvasview/kit"; export default function Review() { const [reviewer, setReviewer] = useSharedState("reviewer", null); const { isMe } = useViewer(); return <div className="grid gap-2 p-4"><PersonPicker label="Reviewer" value={reviewer} onChange={setReviewer} />{reviewer && isMe(reviewer) ? <p className="text-muted">Assigned to you</p> : null}</div>; }
+
 ## Hooks
 
 - `useDraft`: Call useDraft() to get draft(answer). This fills the CanvasView answer panel with the fields answer names; fields drafted earlier stay. Input blocks with a field prop draft for you.
@@ -32,6 +36,8 @@ A component can open other components on the canvas, for everyone, such as an in
 - `useGroupMode`: Call useGroupMode() in a component that several people use at once. Its frame then shows no "someone is using this" lock, asks for no control, and sends all its writes without one-person control. Poll, RankedVote and Board call it for you.
 - `useData`: Call useData(source, { path, query?, method?, body?, headers? }) to get { data, response, error, loading, refresh } from an owner-approved data source (list_data_sources). It reads when the component mounts and again when source or the request change. data is the parsed body when the source answers with JSON; response has status, ok, contentType and text. error has a code: data_status when the source answered with a status other than 2xx, otherwise why CanvasView refused or could not reach it. The canvas must list the source in dataSources. Use fetchData for writes.
 - `useRoute`: Call useRoute() to get { path, navigate } in a component that declares routes. path is the open page, one of the node's declared paths; it starts on the first, or on the page the address names. navigate(path) opens another; a path the node does not declare is ignored. The page is each viewer's own, like a browser tab: keep it in useSharedState instead when everyone should move together. Render the page for path yourself, and link between pages with RouteLink.
+- `useMembers`: Call useMembers() in a component whose node declares uses: ["members"] to get { people, available, loaded, directory, canAssign, show }: the canvas's people, whom it can assign (see members). people are each { id, name, color }, by name. show(value) gives a stored person as they look now, { name, initials, color?, external, known }, so a rename or a new color shows without a write. available is false in a node that does not declare it, where people is empty. directory is false for someone who has the canvas by its link only, who is given only the people already assigned on it. canAssign is false for someone who only views the canvas, or once it is closed. loaded is false until the list has come.
+- `useViewer`: Call useViewer() to get { name, verified, person, isMe } for whoever is looking. person is their person value ({ id, name }) when they are signed in, so a component can say Assigned to you or filter to Mine; isMe(value) asks it of a stored person. Someone not signed in has no person, and isMe is false for them. Example: const { isMe } = useViewer(); const mine = tasks.filter((task) => isMe(task.owner));
 - `useInstance`: Call useInstance() in a component that something opened (see opens) to get { id, type, key, parent, node }: key is the value it was opened by, as a string, such as the email's id; parent is { kind: "node" | "instance", id } for what opened it; node is the core node it descends from. It returns null in a component that is a node of the canvas itself. The input it was opened with is its data prop.
 
 ## Functions
@@ -78,6 +84,8 @@ Nodes are placed automatically: flow (top to bottom along edges) when the canvas
 - [`RouteLink`](#routelink)
 - [`canvas`](#canvas) (object)
 - [`useMessages`](#usemessages) (hook)
+- [`PersonPicker`](#personpicker)
+- [`PersonChip`](#personchip)
 - [`useOpen`](#useopen) (hook)
 - [`useOpened`](#useopened) (hook)
 - [`useTool`](#usetool) (hook)
@@ -275,20 +283,20 @@ Example data:
 
 ### Checklist
 
-Items people tick off, each with an optional owner and note, with progress such as 3 of 7 done.
+Tasks people work through: each is to do, doing or done (ticking it makes it done), with an owner picked from the canvas's people or typed for someone outside, and an optional note, with progress such as 3 of 7 done.
 
 Widget node: `{ "kind": "widget", "widget": "checklist@1", "data": { ... } }`.
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
-| `items` | (string \| { label: string; owner?: string; note?: string })[] | yes | 1 to 100 items. Shown as text, never as HTML. |
-| `field` | string | no | Draft the ticked item indexes, in order into this answer field, filling the answer panel. Declare it in answerSchema as type array with items { type: integer }: a field answerSchema does not have is refused. |
-| `stateKey` | string | no | Keep the ticked item indexes, so ticks show to everyone live in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. |
+| `items` | (string \| { label: string; owner?: { id: string; name: string } \| { name: string; external: true }; note?: string })[] | yes | 1 to 100 items. owner is who it starts assigned to: a person: { id, name } with an id from list_canvas_people (the canvas's own agent: read_people), or { name, external: true } for someone outside the organization, who gets no access. People see the person's current name and color. Shown as text, never as HTML. |
+| `field` | string | no | Draft the indexes of the items that are done, in order into this answer field, filling the answer panel. Declare it in answerSchema as type array with items { type: integer }: a field answerSchema does not have is refused. |
+| `stateKey` | string | no | Keep each item's status and owner, so everyone sees them live in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. It holds { "<index>": { status: "todo" \| "doing" \| "done", owner?: person \| null } }; owner null takes away the owner the item's data gave. |
 
 Example data:
 
 ```json
-{"items":[{"label":"Read the security review","owner":"Dana"},{"label":"Check the renewal date","note":"Due 1 December"}],"stateKey":"review-checklist"}
+{"items":[{"label":"Read the security review","owner":{"name":"Acme legal","external":true}},{"label":"Check the renewal date","note":"Due 1 December"}],"stateKey":"review-checklist"}
 ```
 
 ### Approval
@@ -370,21 +378,21 @@ Example data:
 
 ### Board
 
-Columns of cards, such as To do, Doing and Done, that several people work on at once. Anyone can add a card, edit its text and owner, move it with its Move to menu or by dragging, and delete it. Up to 200 cards of 500 characters. Several people use it at once with no one-person control, also inside an agent component. Results update live for everyone.
+Columns of cards, such as To do, Doing and Done, that several people work on at once. Anyone can add a card, edit its text, pick its owner from the canvas's people (or type a name for someone outside), move it with its Move to menu or by dragging, and delete it. Cards show their owner's mark and color, and each viewer can show only one owner's cards, their own, or those with none. Up to 200 cards of 500 characters. Several people use it at once with no one-person control, also inside an agent component. Results update live for everyone.
 
 Widget node: `{ "kind": "widget", "widget": "board@1", "data": { ... } }`.
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
 | `columns` | string[] | yes | 2 to 6 column names, each used once. Shown as text, never as HTML. |
-| `stateKey` | string | yes | 1 to 80 characters. Each card is its own key, <stateKey>:card:<cardId>, holding { text, column, owner?, order, updatedAt }, or null once deleted; cards sort by order within a column. Two people moving the same card at once leave it in one column for everyone. Read the cards with get_canvas_state. |
-| `cards` | { text: string; column?: string; owner?: string }[] | no | Up to 200 starting cards; column defaults to the first. A starting card has the id seed<index>, so writing <stateKey>:card:seed0 changes or (with null) deletes it. |
+| `stateKey` | string | yes | 1 to 80 characters. Each card is its own key, <stateKey>:card:<cardId>, holding { text, column, owner?, order, updatedAt }, or null once deleted; owner is a person. Cards sort by order within a column. Two people moving the same card at once leave it in one column for everyone. Read the cards with get_canvas_state. |
+| `cards` | { text: string; column?: string; owner?: { id: string; name: string } \| { name: string; external: true } }[] | no | Up to 200 starting cards; column defaults to the first. owner: a person: { id, name } with an id from list_canvas_people (the canvas's own agent: read_people), or { name, external: true } for someone outside the organization, who gets no access. People see the person's current name and color. A starting card has the id seed<index>, so writing <stateKey>:card:seed0 changes or (with null) deletes it. |
 | `field` | string | no | Draft { columns: { name: card text[] } } as it changes, once this viewer has changed the board into this answer field, filling the answer panel. Declare it in answerSchema as type object: a field answerSchema does not have is refused. Each column lists at most 100 cards. |
 
 Example data:
 
 ```json
-{"columns":["To do","Doing","Done"],"stateKey":"launch-board","cards":[{"text":"Draft the announcement","owner":"Dana"},{"text":"Book the venue","column":"Doing"}]}
+{"columns":["To do","Doing","Done"],"stateKey":"launch-board","cards":[{"text":"Draft the announcement","owner":{"name":"Dana at Northwind","external":true}},{"text":"Book the venue","column":"Doing"}]}
 ```
 
 ### Conversation
@@ -480,6 +488,39 @@ return <>
   {last && <p>{messageStatus(last)}</p>}
   {last?.status === "open" && last.approval.needs === "sender" && !last.approval.approvedAt && <button onClick={() => canvas.approve(last.id)}>Approve</button>}
 </>;
+```
+
+### PersonPicker
+
+Choose one person, or several with multiple, from the canvas's people, with search, the same way the Checklist and the Board assign owners (BUILD-249). A name that matches nobody can be used as it was typed, stored as { name, external: true }. Needs uses: ["members"] on the node. For someone who may not assign, it shows who is chosen and does not open.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `value` | { id: string; name: string } \| { name: string; external: true } \| null, or an array with multiple | no | Who is chosen now, as stored. |
+| `onChange` | (value) => void | yes | Called with the new person value, null for no one, or with multiple the new list (up to 20). Write it to shared state. |
+| `multiple` | boolean | no | Choose several people. Default false. |
+| `label` | string | no | What the choice is for, such as Reviewer, for screen readers. Default Owner. |
+| `isDisabled` | boolean | no | Show who is chosen without letting anyone change it. |
+
+Example data:
+
+```json
+{"label":"Reviewer","value":null}
+```
+
+### PersonChip
+
+A person as everyone sees them: a round mark with their initials in their own color and their current name, with you after it for the viewer. A typed name has a plain outlined mark. Works with any stored person value; the current name and color need uses: ["members"] on the node, without it the stored name shows.
+
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `person` | { id: string; name: string } \| { name: string; external: true } | yes | A stored person value. |
+| `label` | string | no | What they are, such as Owner, read before the name by screen readers. |
+
+Example data:
+
+```json
+{"person":{"name":"Dana at Northwind","external":true},"label":"Owner"}
 ```
 
 ### useOpen
