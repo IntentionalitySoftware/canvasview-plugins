@@ -38,7 +38,7 @@ Then pick the shape:
 When the request repeats an earlier kind of canvas (the same review for another customer, this
 week's version of last week's check), call `search_templates` first. Create from a match with
 `create_canvas { idempotencyKey, template: "<name>", params: {...} }`: params are checked before
-any charge, and `title`, `expiresInHours`, `stayOpen` and `access` still override the template's.
+any charge, and `title`, `expiresInHours`, `stayOpen` and `access` still override the template's. It lists CanvasView's own templates too (`fromCanvasView`): read one's description before offering it.
 
 When a canvas worked and will recur, save it with `save_template`: either `fromCanvasId` with
 `bindings` from paths such as `nodes[#charges].data.rows` to parameter names (all other node data

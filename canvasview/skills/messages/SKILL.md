@@ -26,20 +26,38 @@ or Microsoft connector, and its canvas agents never connect to anyone's MCP serv
 - Data the component only reads: pass it in `data`, or use a data source (build-app).
 - Server-side work CanvasView can do itself, such as a lookup: a canvas tool (build-tools).
 - Before you offer anything that sends mail or posts, check you have your own tools for it. If you
-  have none, say so plainly and do not build the component.
+  have none, say you cannot send mail (or post), and do not build or create it.
+
+## Worked example: the email templates
+
+`search_templates` finds two templates CanvasView provides (`fromCanvasView: true`):
+`email-workspace` (an inbox, each opened email as its own component, and compose) and `email-app`
+(one component, its pages as routes). Both send the same types and keep mail in the same keys, so
+handle either the same way. Offer them only when you have email tools; pass `access` naming who
+shares the mailbox. Canvas-wide shared state, written with `set_canvas_state`:
+
+- `mail.inbox`: `{ mailbox?, fetchedAt, emails: [{ id, from: { name, address }, subject, snippet,
+  receivedAt, unread }] }`, newest first, at most 50. Cut id to 200 characters, name 80, address
+  254, subject 150, snippet 120; then drop the oldest until the JSON is under 60,000 bytes.
+- `mail.body.0` to `mail.body.9`: one opened email each, `{ id, from, to: [], cc: [], subject,
+  receivedAt, text, truncated, fetchedAt }`. Plain text, at most 16,000 characters and 48,000
+  bytes as JSON, else cut it and set `truncated`. Reuse the slot that holds the id, else an empty
+  one, else the one fetched longest ago.
+
+| Type | Payload | Do | Result |
+| --- | --- | --- | --- |
+| `inbox.refresh` | `{ since? }` (ISO 8601) | fetch what came after `since`, or the newest; merge into `mail.inbox` | `{ count }` |
+| `email.open` | `{ emailId }` | fetch that email into a `mail.body.N` slot | `{ key: "mail.body.N" }` |
+| `email.send` | `{ to: [], cc?: [], subject, body, inReplyTo? }` | send it, threaded on `inReplyTo` | `{ messageId }` |
+
+`email.send` needs the sender's approval and expires in a day; the other two expire in 15 minutes.
+Until you claim one, the canvas shows "Waiting for your agent".
 
 ## Building: declare the types
 
-A component node declares what it may send, beside its source:
-
-```json
-{ "id": "mail", "kind": "component", "source": "...",
-  "messages": {
-    "email.send": { "payload": { "type": "object", "properties": { "to": { "type": "string" }, "subject": { "type": "string" }, "body": { "type": "string" } }, "required": ["to", "subject", "body"] },
-      "result": { "type": "object", "properties": { "messageId": { "type": "string" } }, "required": ["messageId"] },
-      "approval": "sender", "expiresIn": "P1D" },
-    "inbox.refresh": { "payload": { "type": "object" } } } }
-```
+A component node declares what it may send, beside its source: `messages: { "email.send":
+{ payload, result?, approval?, expiresIn?, claimFor? } }`. `get_template` on `email-app` shows
+the email types declared in full.
 
 - A type is two or more lowercase words joined by dots. The `canvas` namespace is CanvasView's.
 - `payload` and `result` are JSON Schemas: the payload is checked when sent, the result when the
@@ -60,12 +78,10 @@ import { canvas, messageStatus, useMessages } from "@canvasview/kit";
 
 export default function Mail({ data }: { data: { to: string } }) {
   const { messages, send, pending, error, available } = useMessages({ type: "email.send" });
-  const refresh = useMessages({ type: "inbox.refresh" });
   if (!available) return <p>Only people the owner invited can send from here.</p>;
   return (
     <div className="grid gap-3 p-4">
-      <button type="button" disabled={pending} onClick={() => void send({ to: data.to, subject: "Hello", body: "..." })}>Send</button>
-      <button type="button" onClick={() => void refresh.send({})}>Check for new mail</button>
+      <button type="button" disabled={pending} onClick={() => void send({ to: [data.to], subject: "Hello", body: "..." })}>Send</button>
       {error ? <p role="alert">Not sent: {error}</p> : null}
       <ul>{messages.map((m) => (
         <li key={m.id}>{String((m.payload as { subject: string }).subject)}: {messageStatus(m)}
@@ -113,8 +129,6 @@ the connection's, which people can rename on their API keys page.
 5. Cannot do it at all? `release_message { id }` hands it back, open, to another of the owner's agents.
 6. Long work: call `claim_message` again before `claim.until` to renew.
 
-For `inbox.refresh`, fetch the mail, write it into the canvas (`set_canvas_state` or a free
-`patch_canvas` data change), then complete with what you fetched, such as `{ "count": 12 }`.
 
 ## CanvasView's own types
 

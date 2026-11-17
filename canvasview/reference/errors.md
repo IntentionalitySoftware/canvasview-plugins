@@ -2,7 +2,7 @@
 
 # CanvasView error codes
 
-Plugin version 0.14.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.15.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
@@ -169,6 +169,7 @@ Plugin version 0.14.0. A failed tool call returns `isError: true` with JSON text
 | `stripe_unavailable` | 503 | Stripe billing is unavailable. / Credit refills are currently unavailable. |
 | `template_limit` | 409 | This workspace holds … templates. Delete one with delete_template before saving another. |
 | `template_not_found` | 404, 400 | No template is named …. Use search_templates to find one. |
+| `template_provided` | 403 | CanvasView provides …, so it cannot be changed or deleted. Save a template of your own under this name to use yours in this workspace in its place. |
 | `template_with_spec` | 400 | Send template with params, or a full spec, not both. Remove …, or template. |
 | `tool_busy` | 429 | This canvas is running as many tool calls as it can. Try again in a moment. |
 | `tool_not_found` | 404 | This canvas has no tool of that name. / This canvas's repository has no such tool. Send the tool's code, manifest and cases to test it. / There is no tools/… at …. |
