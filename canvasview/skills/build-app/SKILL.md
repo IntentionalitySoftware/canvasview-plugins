@@ -43,18 +43,18 @@ it can open:
 
 ```json
 { "id": "inbox", "kind": "component", "source": "...", "data": { "emails": [] },
-  "opens": { "email": { "ref": "email-reader", "key": "emailId" } } }
+  "opens": { "email": { "ref": "email-reader", "key": "emailId", "title": "subject" } } }
 ```
 
 - `ref` is a saved component: save the reader with `save_component` first, or the canvas is refused
   with `component_not_found`. An instance renders it with the open input as its `data`.
 - `key` names the input field that tells instances apart. Opening the same key again brings back the
-  one there is, restored if it was minimized or closed, with the new input as its data; its id, state
-  and place stay.
+  one there is, restored, with the new input as its data. `title` (optional) names the field whose text
+  people see as its name (the subject, cut to 120 characters); without it, type and key (Email m1).
 - Anyone who can open the canvas, link viewers too, can open, minimize, restore and close instances.
   Add `"access": "named"` to keep that to invited people and members. Removing one always needs an
-  invited person or a member. A declaration may hold its own `opens`, three levels deep.
-- A component opens only the types its node declares.
+  invited person or a member. A declaration may hold its own `opens`, three levels deep. A component
+  opens only the types its node declares.
 
 ```tsx
 import { canvas } from "@canvasview/kit";
