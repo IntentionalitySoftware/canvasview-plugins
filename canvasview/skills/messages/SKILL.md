@@ -103,7 +103,7 @@ export default function Mail({ data }: { data: { to: string } }) {
   resolves with the message (its `id` and status) or rejects with an Error carrying `reason`.
 - `canvas.approve(id)` approves in the component that sent it, never in an inbox. `canvas.cancel(id)`
   cancels, for the sender or the owner, before it is done.
-- `messageStatus(message)` is the line to show: Waiting for approval, Waiting for an agent,
+- `messageStatus(message)` is the line to show: Waiting for approval, Waiting for your agent,
   "Claimed by Dana, via Release bot", Done, Failed, Expired, Cancelled. Show `result` when done
   and `reason` when failed.
 

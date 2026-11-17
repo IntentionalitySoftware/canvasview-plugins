@@ -42,7 +42,7 @@ When someone asks for a component that assigns people, or to "use our organizati
 
 ## Functions
 
-- `messageStatus`: Call messageStatus(message) with a message from useMessages for the line a person reads: Waiting for approval, Waiting for an agent, Claimed by Dana, via Release bot, Done, Failed, Expired or Cancelled.
+- `messageStatus`: Call messageStatus(message) with a message from useMessages for the line a person reads: Waiting for approval, Waiting for your agent, Claimed by Dana, via Release bot, Done, Failed, Expired or Cancelled.
 - `fetchData`: Call await fetchData(source, { path, query?, method?, body?, headers? }) for one request, for example a write when someone presses a button. It resolves with { status, ok, contentType, text, data? } whatever status the source answered with, and rejects with an error carrying a code when CanvasView refuses the call. method is GET unless the owner allowed POST, PUT, PATCH or DELETE on the source, which work on active canvases only. A write needs someone the owner named: a person invited as participant or above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only the link, signed in or not, and anyone invited as a viewer is refused with invite_required or forbidden; reads still work for them. On a public canvas, collect answers or shared state and let the organization's agent act on them. A string body is sent as text and anything else as JSON. headers may set Content-Type and Accept only; CanvasView adds the source's secret headers, which a component never sees.
 
 ## Data sources
