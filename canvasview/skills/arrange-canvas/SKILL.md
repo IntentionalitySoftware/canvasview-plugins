@@ -71,6 +71,12 @@ To keep their current horizontal order and only level them, align and distribute
 Align and distribute keep the chosen nodes apart but may overlap nodes you did not choose, so
 check the returned layout.
 
+## Plans
+
+A canvas made from a template has a `plan`: rows, stacks and grids of node IDs in its spec. CanvasView places the
+nodes by the plan and moves them as their real heights arrive, until someone moves a node. Tidy goes back to the plan.
+Remove it with `patch_canvas` `set { plan: null }`, or send a new one the same way.
+
 ## Canvas view and components view
 
 Every canvas has two views:

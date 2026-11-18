@@ -75,7 +75,7 @@ component node. Agent writes with `set_canvas_state` always apply. So:
 Compose kit blocks inside your component instead of rebuilding them: `Note`, `DataTable`,
 `Chart`, `Decision` and the others take the same props as their widget data
 (see [kit.md](../../reference/kit.md)). Style the rest with Tailwind classes, compiled when the
-canvas is saved on the kit's theme: `bg-surface`, `text-muted`, `border-border`, `bg-accent` and
+canvas is saved on the kit's theme (on a template's canvas, `bg-block`, `text-block`, `text-block-muted` and `text-block-heading` follow the block's role): `bg-surface`, `text-muted`, `border-border`, `bg-accent` and
 `text-accent-foreground` follow the viewer's theme, as does `dark:`. The frame starts from
 Tailwind's reset, so give content room (`p-4`, `gap-3`, `rounded-xl`) and style headings and
 buttons. Write class names in full: only names in the source are compiled. `style` works too.

@@ -36,15 +36,12 @@ Then pick the shape:
 ## Reuse a whole canvas
 
 When the request repeats an earlier kind of canvas (the same review for another customer, this
-week's version of last week's check), call `search_templates` first. Create from a match with
-`create_canvas { idempotencyKey, template: "<name>", params: {...} }`: params are checked before
-any charge, and `title`, `expiresInHours`, `stayOpen` and `access` still override the template's. It lists CanvasView's own templates too (`fromCanvasView`): read one's description before offering it.
+week's version of last week's check), call `search_templates` first. Read a match with `get_template`, then create
+from it with `create_canvas { idempotencyKey, template: "<name>", content: {...} }`: content is keyed by block name and
+checked before any charge, and `title`, `expiresInHours`, `stayOpen` and `access` still override the template's.
+It lists CanvasView's own templates too (`fromCanvasView`): read one's recipe before offering it.
 
-When a canvas worked and will recur, save it with `save_template`: either `fromCanvasId` with
-`bindings` from paths such as `nodes[#charges].data.rows` to parameter names (all other node data
-is emptied, so no customer data stays in the template), or a `spec` where a value is
-`{ "$param": "rows" }` and a string holds `{{customer}}`. Give parameters a `default` when an
-empty value would not make a valid canvas.
+When a canvas worked and will recur, save it as a recipe with `save_template`. Read the write-template skill first.
 
 ## 2. Reuse before you write
 

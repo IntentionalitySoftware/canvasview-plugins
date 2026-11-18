@@ -15,7 +15,7 @@ When several components work together through shared state, write the contract f
 parts cannot drift. The canvas enforces it. Work in this order:
 
 1. **Write the contract** in the spec's `contract`: `state` maps each key (or a prefix such as
-   `inputs.*` or `votes:*`) to `{ schema, writers }`, where `schema` uses the template parameter
+   `inputs.*` or `votes:*`) to `{ schema, writers }`, where `schema` uses the flat parameter
    subset and `writers` lists node ids or is `"any"`. `roles` gives each node `{ purpose, reads, writes }`.
 2. **Validate** with `validate_canvas`. It reports a role for a missing node, an undeclared key
    and a write the writers do not allow, and warns when a component's source uses a literal key
@@ -24,7 +24,7 @@ parts cannot drift. The canvas enforces it. Work in this order:
    with the final node ids, so the roles hold from the start.
 4. **Add components one at a time** with `patch_canvas` `update_node { id, source }`, and
    validate each before you send it.
-5. **Save it** with `save_template` (`fromCanvasId`): the template keeps the contract, and
+5. **Save it** as a recipe (the write-template skill): the recipe keeps the contract, and
    `search_templates` finds it by role purposes and state keys.
 
 At write time the canvas refuses an undeclared key (`undeclared_key`), a value that does not fit

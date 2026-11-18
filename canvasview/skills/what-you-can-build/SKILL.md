@@ -24,7 +24,7 @@ smallest thing below that does the job, then read the skill named beside it.
 | Server-side work for a component: a lookup, a poll, a stream, data it keeps | A canvas tool | build-tools |
 | A button that has your agent act outside the canvas: send an email, fetch mail, post to Slack | Message types on the node, handled with your own tools | messages |
 | People reading and sending mail together, when you have email tools | CanvasView's `email-workspace` or `email-app` template | messages |
-| The same canvas again next week, for another customer | A template | create-canvas |
+| The same canvas again next week, for another customer, with as many parts as the day needs | A template, written as a recipe | write-template |
 | A component worth using on other canvases | The component library | build-component |
 | Every canvas in the organization's colors and typeface | The organization's design | organization-design |
 | Canvases, library and data sources kept apart per team | Workspaces: `list_workspaces`, then `workspace` on the tools | work-with-people |

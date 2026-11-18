@@ -2,7 +2,7 @@
 
 # CanvasView error codes
 
-Plugin version 0.16.1. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.17.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
@@ -67,9 +67,9 @@ Plugin version 0.16.1. A failed tool call returns `isError: true` with JSON text
 | `insufficient_credits` | 402 | The account needs more credits before starting this request. |
 | `internal_error` | 500 | Retry with the original idempotency key. / Something went wrong on our side. Read the canvas again with get_canvas and retry. / Something went wrong on our side. Retry the request. |
 | `invalid_answer` | 400 |  |
-| `invalid_bindings` | 400 | Fix the bindings. … |
 | `invalid_color` | 400 | Give a color as a hex, #rrggbb or #rgb, such as #1d4ed8. null clears it. |
 | `invalid_comment` | 400 | Write a comment of plain text. |
+| `invalid_content` | 400 | Fix the content for template …. … |
 | `invalid_content_type` | 415 |  |
 | `invalid_data_path` | 400 | The path is not allowed. … |
 | `invalid_data_request` | 400 | Send a body with POST, PUT, PATCH or DELETE only. |
@@ -83,16 +83,15 @@ Plugin version 0.16.1. A failed tool call returns `isError: true` with JSON text
 | `invalid_name` | 400 | Keep a name within … characters. An empty name clears it. |
 | `invalid_node` | 400 | Use a node ID from this canvas, or leave out nodeId to comment on the whole canvas. |
 | `invalid_origin` | 403 | Use an authorized MCP client. / Open CanvasView to change account settings. / Open the canvas link to join. |
-| `invalid_params` | 400 | Fix the params for template …. … |
 | `invalid_patch` | 400 | …: … |
 | `invalid_payload` | 400 | The payload does not fit the type's payload schema. |
 | `invalid_prompt` | 400 | Write what you want the canvas's agent to do. |
+| `invalid_recipe` | 400 | Fix the recipe. … |
 | `invalid_result` | 400 | The result does not fit the type's result schema. Read the type's result schema on the canvas's node (get_canvas), and complete again. |
 | `invalid_signature` | 400 | The webhook signature did not verify. |
 | `invalid_size` | 400 | Give a size of 160 to 1600 wide and 80 to 1200 tall, or null to fit its content again. |
 | `invalid_source_path` | 400 | The path is not allowed. … |
 | `invalid_stripe_signature` | 400 | Send a signed Stripe event. |
-| `invalid_template` | 400 | Fix the template placeholders. … / With the canvas data removed, these paths fail validation. Bind each to a parameter (with a default when it needs one): …. / The template does not make a valid canvas with sample parameter values (each default, or an empty value of its type; a required string is its name). … / Fix the template access. … |
 | `invalid_tool_input` | 400 | The input does not fit …'s input schema. … |
 | `invalid_value` | 400 | Use JSON values: null, booleans, numbers, strings, arrays, or objects. |
 | `invite_required` | 403 | Ask the owner to invite you. Only people they invited and members of the organization can send messages. / Ask the owner to invite you. Only people they invited and members of the organization can do this. |
@@ -141,7 +140,7 @@ Plugin version 0.16.1. A failed tool call returns `isError: true` with JSON text
 | `package_too_large` | 400 | The package pulls in more than 5 MB of code. Import a smaller entry point or use a smaller package. |
 | `package_too_recent` | 400 | The version was published less than 3 days ago. Use an older version; the message suggests one. |
 | `parent_not_found` | 404 | Name a node of this canvas, or an instance on it, as the parent. |
-| `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Keep the template spec below 1 MB. / Reduce the template's canvas below 1 MB with sample values. / Keep a payload or a result within … KB. / Keep a tool's input within 64 KB. / Reduce the request size. |
+| `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Keep the recipe below 1 MB. / Reduce the recipe's example canvas below 1 MB. / Keep a payload or a result within … KB. / Keep a tool's input within 64 KB. / Reduce the request size. |
 | `payment_disputed` | 402 | A payment on this account is under dispute. Contact support@canvasview.dev. |
 | `payment_recovery_required` | 409 | Review the Stripe payment before retrying grant issuance. |
 | `pin_limit` | 409 | This account already keeps … canvases, the most allowed. Unpin one before keeping another. |
@@ -170,7 +169,7 @@ Plugin version 0.16.1. A failed tool call returns `isError: true` with JSON text
 | `template_limit` | 409 | This workspace holds … templates. Delete one with delete_template before saving another. |
 | `template_not_found` | 404, 400 | No template is named …. Use search_templates to find one. |
 | `template_provided` | 403 | CanvasView provides …, so it cannot be changed or deleted. Save a template of your own under this name to use yours in this workspace in its place. |
-| `template_with_spec` | 400 | Send template with params, or a full spec, not both. Remove …, or template. |
+| `template_with_spec` | 400 | Send template with content, or a full spec, not both. Remove …, or template. |
 | `tool_busy` | 429 | This canvas is running as many tool calls as it can. Try again in a moment. |
 | `tool_not_found` | 404 | This canvas has no tool of that name. / This canvas's repository has no such tool. Send the tool's code, manifest and cases to test it. / There is no tools/… at …. |
 | `tool_replaced` | 409 | This version of the tool is no longer live. |

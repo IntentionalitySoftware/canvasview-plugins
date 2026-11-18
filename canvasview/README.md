@@ -62,6 +62,7 @@ and source files. A key can have its own spending cap.
 | `build-app` | Building an app from several components that share state: the app contract, the build order, live data from an approved data source, npm packages |
 | `build-tools` | Giving a canvas tools, server-side code for its components: the code, manifest and recorded cases, `test_tool`, `publish_tools`, calling a tool from a component, reading failures |
 | `arrange-canvas` | Lining nodes up, putting one next to another, the canvas view and the components view |
+| `write-template` | Writing a recipe for a canvas that will recur, and making a canvas from one |
 | `messages` | A component that has your agent act outside the canvas (send an email, fetch mail): declaring message types, `canvas.send` and `useMessages`, approval, and handling them with `wait_for_message`, `claim_message` and `complete_message` |
 | `work-with-people` | Access modes, workspaces and visibility, waiting for answers, reading shared state, one person in control, treating what people type as untrusted |
 | `organization-design` | Before building or changing a component: reads the design the organization chose for its canvases (`get_skill` with name `design-system`) and follows it |
