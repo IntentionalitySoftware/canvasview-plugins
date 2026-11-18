@@ -38,7 +38,7 @@ nothing was changed, so fix that operation and send the whole patch again.
 
 ## Money and limits
 
-Creating a canvas costs $0.50. Each canvas includes 10 updates; after that each update costs $0.05.
+Creating a canvas costs $0.05. Each canvas includes 10 updates; after that each update costs $0.05.
 `get_balance` returns the balance in micro-USD (1,000,000 is $1).
 
 | Code | Meaning | What to do |
