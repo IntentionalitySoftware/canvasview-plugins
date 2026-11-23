@@ -2,7 +2,7 @@
 
 # CanvasView kit reference
 
-Plugin version 0.17.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
+Plugin version 0.22.0. The same content `get_kit_reference` returns: the `@canvasview/kit` building blocks, the hooks for components, and how canvases are laid out.
 
 ## Components
 
@@ -10,11 +10,11 @@ Use kind: component, source: TSX, and data: an object. Export a default componen
 
 Before writing a component, call search_components (GET /api/components?query=) and reuse a match with kind: component, ref: its name, and data; get_component returns source to fork. Save anything reusable with save_component (PUT /api/components/:name). Saved components are private to this account.
 
-A widget node renders the kit export named by its widget field, with data as the props. Give it title (1 to 120 characters) to name it on the canvas, such as "Open tickets"; without one the heading is the widget type.
+A widget node renders the kit export named by its widget field, with data as the props. New widgets share their interactive state. Set stateMode to private on a widget node, or pass privateState to an embedded kit control, for a personal input. Repeated controls in TSX use React keys. Give it title (1 to 120 characters) to name it on the canvas, such as "Open tickets"; without one the heading is the widget type.
 
 ## Pages inside a component
 
-A component can have several pages. Declare them on the node as routes: [{ path, title }], 1 to 20, such as [{ path: "/", title: "Revenue" }, { path: "/customers", title: "Customers" }]. A path is / or lowercase words with hyphens, such as /reports/monthly, at most 120 characters, with no parameters; a title is 1 to 60 characters and names the page in CanvasView's menus. The component opens on the first route. Read the open page with useRoute and render it; link between pages with RouteLink. A person can open the node on its own, full window, at /c/<canvas>/<node>, and on one page at /c/<canvas>/<node>/<path>, where the address follows the page and Back works. update_node routes replaces them in a patch and routes: null removes them. validate_canvas reports a problem at nodes[i].routes[j].path. Example: const { path } = useRoute(); return <><nav><RouteLink to="/">Revenue</RouteLink> <RouteLink to="/customers">Customers</RouteLink></nav>{path === "/customers" ? <Customers /> : <Revenue />}</>;
+A component can have several pages. Declare them on the node as routes: [{ path, title }], 1 to 20, such as [{ path: "/", title: "Revenue" }, { path: "/customers", title: "Customers" }]. A path is / or lowercase words with hyphens, such as /reports/monthly, at most 120 characters, with no parameters; a title is 1 to 60 characters and names the page in CanvasView's menus. The component starts on its first route. A participant can open a page for everyone. A new viewer follows the saved page, and may look through the pages on their own until the shared page moves. In a component that calls useGroupMode, each person moves between its pages on their own, since each works in their own part of it. Declare routes in an opens declaration to give each opened instance its own shared page. Read the open page with useRoute and render it; link between pages with RouteLink. A person can open the node on its own, full window, at /c/<canvas>/<node>, and on one page at /c/<canvas>/<node>/<path>, where the address follows the page and Back works. update_node routes replaces them in a patch and routes: null removes them. validate_canvas reports a problem at nodes[i].routes[j].path. Example: const { path } = useRoute(); return <><nav><RouteLink to="/">Revenue</RouteLink> <RouteLink to="/customers">Customers</RouteLink></nav>{path === "/customers" ? <Customers /> : <Revenue />}</>;
 
 ## Opening other components
 
@@ -28,21 +28,23 @@ When someone asks for a component that assigns people, or to "use our organizati
 
 - `useDraft`: Call useDraft() to get draft(answer). This fills the CanvasView answer panel with the fields answer names; fields drafted earlier stay. Input blocks with a field prop draft for you.
 - `useSubmit`: Call useSubmit() to get submit(answer). This requests human confirmation in CanvasView.
+- `useComponentState`: Use useComponentState(key, initial) for a component’s interactive state. It returns [value, setValue, { error, loaded }]. Everyone viewing this component sees the same JSON value, including people who join later. Each node or opened instance has its own keys. Use a stable key for each independent value. The limits, updater, and error handling match useSharedState. On a canvas with an app contract, declare the key in the node’s family or the opened type’s instance scope.
+- `usePrivateState`: Use usePrivateState(initial) only for a value intentionally private to one viewer, such as an unsent answer. It has the React useState signature and lasts until the frame unmounts. CanvasView never sends this value to the canvas unless the component explicitly submits or shares it.
 - `useSharedState`: Call useSharedState(key, initial) to get [value, setValue, { error, loaded }], like useState. The value is synced live to everyone on this canvas and survives reloads. Components that use the same key share the value. Inside a component something opened (an instance, see opens) the key is that instance's own: ten emails opened from one inbox each keep their own draft under the same name; use useFamilyState to share with the parent, and useCanvasState for a canvas-wide key. Values are JSON. setValue accepts a value or an updater. Last write wins per key. loaded is false until the page has the canvas's state; until then value is initial whether or not the key is set, so never seed a default before it: write in an effect only once loaded is true and the value is still unset, and list loaded in the effect's dependencies. Limits: 1,000 keys of 1 to 120 characters, 64 KB per value, 1 MB per canvas, 20 writes per second per viewer. A rejected write reverts and sets error to a reason code (key_limit or state_too_large when the canvas is full; read_only for someone who only views the canvas, or once it is closed; on a canvas with a contract, undeclared_key, schema_mismatch or not_a_writer; scope_not_found once the instance was removed). Keep anything a component must remember in shared state, not React state; a frame may reload.
 - `useFamilyState`: Call useFamilyState(key, initial) to get [value, setValue, { error, loaded }], as useSharedState gives, for a key shared by a core node's component and every instance descending from it (its family): which email an inbox has selected, read and written by the inbox and by each email. Two inboxes on one canvas are two families and never share it. Removing the node from the spec erases its family's keys; closing or removing an instance does not. get_canvas_state lists it as ["family","<node id>","<key>"].
 - `useCanvasState`: Call useCanvasState(key, initial) to get [value, setValue, { error, loaded }] for a canvas-wide key from anywhere, inside an instance too: what useSharedState is in a core node's component.
 - `useOpenedState`: Call useOpenedState(type, key) in a component that opens things to read one useSharedState key of each of its own instances of that type, live, as { <instance key>: value } for the instances that hold it, such as each open email's draft. It is read only: an instance writes its own keys. A removed instance's keys are erased, so a key opened again starts empty; a closed one keeps them.
 - `useSharedGroup`: Call useSharedGroup(prefix) to get [entries, set, { error, me, loaded }] for values that several people write at once. entries maps each key <prefix>:<suffix> to its value as { suffix: value }, live; set(suffix, value) writes <prefix>:<suffix>, and null clears it (the key stays, as null). me is this viewer's participant id, so set(me, value) keeps one value per person that nobody else overwrites. loaded is false until the page has the canvas's state; until then empty entries may only be unread, so wait for it before writing a starting entry. Group writes are accepted while someone else uses the component. A participant id is a hash of a signed-in viewer or, on link canvases, a random id kept in the browser, so one person can take part again from another browser. Poll, RankedVote and Board are built on it.
-- `useGroupMode`: Call useGroupMode() in a component that several people use at once. Its frame then shows no "someone is using this" lock, asks for no control, and sends all its writes without one-person control. Poll, RankedVote and Board call it for you.
+- `useGroupMode`: Call useGroupMode() in a component that several people use at once. Its frame then shows no "someone is using this" lock, asks for no control, and sends all its writes without one-person control. Each person moves between its pages (routes) on their own. Poll, RankedVote and Board call it for you.
 - `useData`: Call useData(source, { path, query?, method?, body?, headers? }) to get { data, response, error, loading, refresh } from an owner-approved data source (list_data_sources). It reads when the component mounts and again when source or the request change. data is the parsed body when the source answers with JSON; response has status, ok, contentType and text. error has a code: data_status when the source answered with a status other than 2xx, otherwise why CanvasView refused or could not reach it. The canvas must list the source in dataSources. Use fetchData for writes.
-- `useRoute`: Call useRoute() to get { path, navigate } in a component that declares routes. path is the open page, one of the node's declared paths; it starts on the first, or on the page the address names. navigate(path) opens another; a path the node does not declare is ignored. The page is each viewer's own, like a browser tab: keep it in useSharedState instead when everyone should move together. Render the page for path yourself, and link between pages with RouteLink.
+- `useRoute`: Call useRoute() to get { path, navigate } in a component that declares routes. navigate(path) opens a declared page for everyone viewing that component. CanvasView stores the page, including for people joining later. Each opened instance has its own shared page. Use RouteLink for a link. A viewer moves only their own view, until the shared page moves. In a component that calls useGroupMode, navigate moves only the person's own view.
 - `useMembers`: Call useMembers() in a component whose node declares uses: ["members"] to get { people, available, loaded, directory, canAssign, show }: the canvas's people, whom it can assign (see members). people are each { id, name, color }, by name. show(value) gives a stored person as they look now, { name, initials, color?, external, known }, so a rename or a new color shows without a write. available is false in a node that does not declare it, where people is empty. directory is false for someone who has the canvas by its link only, who is given only the people already assigned on it. canAssign is false for someone who only views the canvas, or once it is closed. loaded is false until the list has come.
 - `useViewer`: Call useViewer() to get { name, verified, person, isMe } for whoever is looking. person is their person value ({ id, name }) when they are signed in, so a component can say Assigned to you or filter to Mine; isMe(value) asks it of a stored person. Someone not signed in has no person, and isMe is false for them. Example: const { isMe } = useViewer(); const mine = tasks.filter((task) => isMe(task.owner));
 - `useInstance`: Call useInstance() in a component that something opened (see opens) to get { id, type, key, parent, node }: key is the value it was opened by, as a string, such as the email's id; parent is { kind: "node" | "instance", id } for what opened it; node is the core node it descends from. It returns null in a component that is a node of the canvas itself. The input it was opened with is its data prop.
 
 ## Functions
 
-- `messageStatus`: Call messageStatus(message) with a message from useMessages for the line a person reads: Waiting for approval, Waiting for your agent, Claimed by Dana, via Release bot, Done, Failed, Expired or Cancelled.
+- `messageStatus`: Call messageStatus(message) with a message from useMessages for the line a person reads: Waiting for approval, Waiting for your agent, Claimed by Dana, via Release bot, Done, Failed, Expired, Cancelled, or Cancelled: the canvas was deleted.
 - `fetchData`: Call await fetchData(source, { path, query?, method?, body?, headers? }) for one request, for example a write when someone presses a button. It resolves with { status, ok, contentType, text, data? } whatever status the source answered with, and rejects with an error carrying a code when CanvasView refuses the call. method is GET unless the owner allowed POST, PUT, PATCH or DELETE on the source, which work on active canvases only. A write needs someone the owner named: a person invited as participant or above, a member who has the canvas through the organization, the owner or an Admin. Anyone with only the link, signed in or not, and anyone invited as a viewer is refused with invite_required or forbidden; reads still work for them. On a public canvas, collect answers or shared state and let the organization's agent act on them. A string body is sent as text and anything else as JSON. headers may set Content-Type and Accept only; CanvasView adds the source's secret headers, which a component never sees.
 
 ## Data sources
@@ -129,7 +131,7 @@ Example data:
 
 ### DataTable
 
-Rows of records with sortable columns, a text filter above 10 rows, and pages of 50. Rows can be highlighted and selected.
+Rows of records with sortable columns, a text filter above 10 rows, and pages of 50. New placements share their sort, filter, page and selection. Rows can be highlighted and selected.
 
 Widget node: `{ "kind": "widget", "widget": "table@1", "data": { ... } }`. Also exported as `Table`.
 
@@ -253,7 +255,7 @@ Widget node: `{ "kind": "widget", "widget": "decision@1", "data": { ... } }`.
 | `layout` | "buttons" \| "cards" | no | Default buttons: one option per row. cards: a grid of cards, for options with descriptions. |
 | `requireReason` | boolean | no | Ask for a reason. With field, the reason is drafted as <field>Reason; add that answer field. |
 | `field` | string | no | Draft the chosen option's value into this answer field, filling the answer panel. Declare it in answerSchema as a string, or an enum of the option values: a field answerSchema does not have is refused. |
-| `stateKey` | string | no | Keep the chosen option's value. The reason stays with each viewer in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. |
+| `stateKey` | string | no | Name a shared key for the chosen option’s value. New placements share this value within the block by default. A reason being typed stays with its author. |
 
 Example data:
 
@@ -273,7 +275,7 @@ Widget node: `{ "kind": "widget", "widget": "form@1", "data": { ... } }`. Also e
 | `schema` | { type: "object"; properties: Record<string, Property>; required?: string[] } | no | Up to 30 properties. A Property has type string, number, integer, boolean or array; title (the label); description (help text); enum (single choice, for string or number); items: { type?, enum } (multi-select, with type array); minimum and maximum (numbers); minLength and maxLength (text). Anything else is rejected. |
 | `spread` | boolean | no | Draft each property as its own answer field, under the property name, instead of one object in field. |
 | `field` | string | no | Draft the valid values as one object (the text, with label) into this answer field, filling the answer panel. Declare it in answerSchema as type object (type string, with label): a field answerSchema does not have is refused. |
-| `stateKey` | string | no | Keep the valid values as one object in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. |
+| `stateKey` | string | no | Name a shared key for the valid values as one object. New placements share this value within the block by default. |
 
 Example data:
 
@@ -291,7 +293,7 @@ Widget node: `{ "kind": "widget", "widget": "checklist@1", "data": { ... } }`.
 | --- | --- | --- | --- |
 | `items` | (string \| { label: string; owner?: { id: string; name: string } \| { name: string; external: true }; note?: string })[] | yes | 1 to 100 items. owner is who it starts assigned to: a person: { id, name } with an id from list_canvas_people (the canvas's own agent: read_people), or { name, external: true } for someone outside the organization, who gets no access. People see the person's current name and color. Shown as text, never as HTML. |
 | `field` | string | no | Draft the indexes of the items that are done, in order into this answer field, filling the answer panel. Declare it in answerSchema as type array with items { type: integer }: a field answerSchema does not have is refused. |
-| `stateKey` | string | no | Keep each item's status and owner, so everyone sees them live in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. It holds { "<index>": { status: "todo" \| "doing" \| "done", owner?: person \| null } }; owner null takes away the owner the item's data gave. |
+| `stateKey` | string | no | Name a shared key for each item's status and owner. New placements share this value within the block by default. It holds { "<index>": { status: "todo" \| "doing" \| "done", owner?: person \| null } }; owner null takes away the owner the item's data gave. |
 
 Example data:
 
@@ -309,7 +311,7 @@ Widget node: `{ "kind": "widget", "widget": "approval@1", "data": { ... } }`.
 | --- | --- | --- | --- |
 | `statement` | string | yes | What the person approves or rejects. Shown as text, never as HTML. |
 | `field` | string | no | Draft { decision: "approved" \| "rejected", comment?, by } into this answer field, filling the answer panel. Declare it in answerSchema as type object: a field answerSchema does not have is refused. by is the viewer's name as the page knows it, or Someone. |
-| `stateKey` | string | no | Keep the same { decision, comment?, by } in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. |
+| `stateKey` | string | no | Name a shared key for the same { decision, comment?, by }. New placements share this value within the block by default. |
 
 Example data:
 
@@ -328,7 +330,7 @@ Widget node: `{ "kind": "widget", "widget": "calculator@1", "data": { ... } }`.
 | `inputs` | { name: string; label: string; value: number; min?: number; max?: number; step?: number; unit?: string }[] | yes | 1 to 20 inputs. name is used in formulas: letters, digits and underscores, starting with a letter or underscore. value is the starting value. Arrow keys change a value by step. |
 | `outputs` | { label: string; formula: string; unit?: string; decimals?: number }[] | yes | 1 to 10 outputs. A formula uses numbers, input names, + - * / ( ), and min, max, round (round(x) or round(x, digits)) and abs. Anything else is rejected when the canvas is saved. |
 | `field` | string | no | Draft { inputs: { name: number }, outputs: { label: number \| null } } into this answer field, filling the answer panel. Declare it in answerSchema as type object: a field answerSchema does not have is refused. |
-| `stateKey` | string | no | Keep the same { inputs, outputs }, so everyone works on one set of inputs in this shared-state key, so everyone sees it and get_canvas_state reads it before any answer. Without it the value is each viewer's own. |
+| `stateKey` | string | no | Name a shared key for the inputs and outputs. New placements share this value within the block by default. |
 
 Example data:
 
@@ -378,7 +380,7 @@ Example data:
 
 ### Board
 
-Columns of cards, such as To do, Doing and Done, that several people work on at once. Anyone can add a card, edit its text, pick its owner from the canvas's people (or type a name for someone outside), move it with its Move to menu or by dragging, and delete it. Cards show their owner's mark and color, and each viewer can show only one owner's cards, their own, or those with none. Up to 200 cards of 500 characters. Several people use it at once with no one-person control, also inside an agent component. Results update live for everyone.
+Columns of cards, such as To do, Doing and Done, that several people work on at once. Anyone can add a card, edit its text, pick its owner from the canvas's people (or type a name for someone outside), move it with its Move to menu or by dragging, and delete it. Cards show their owner's mark and color, and the group can filter to one owner's cards, their own, or those with none. Up to 200 cards of 500 characters. Several people use it at once with no one-person control, also inside an agent component. Results update live for everyone.
 
 Widget node: `{ "kind": "widget", "widget": "board@1", "data": { ... } }`.
 
@@ -430,7 +432,7 @@ Example data:
 
 ### RouteLink
 
-A link to one of the component's pages, for a component that declares routes. A real link: it takes focus and the keyboard, and is marked aria-current="page" while its page is open, which is the hook for styling the active one. Other anchor props (className, style, aria-label) pass through.
+A link that opens a declared component page for everyone viewing it. A real link: it takes focus and the keyboard, and is marked aria-current="page" while its page is open, which is the hook for styling the active one. Other anchor props (className, style, aria-label) pass through.
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -452,9 +454,9 @@ The canvas a component runs on. await canvas.tools.<name>(input) calls one of th
 | `tools` | Record<string, (input?: object) => Promise<output>> | yes | One function per tool, by the tool's name. input is a JSON object that fits the tool's input schema, up to 64 KB; default {}. The output fits the tool's output schema. |
 | `open` | (type: string, input: object) => Promise<{ id, type, key, status }> | yes | Opens one of the types the node declares in opens, beside it, for everyone. input becomes the opened component's data and must hold the declaration's key field. Opening a key that is already there gives back that instance with input as its new data, restored if it was minimized or closed. Rejects with an Error whose reason is open_unavailable (the node does not declare the type, or nothing can be opened here), invalid_key (the input lacks the declaration's key field: a string of 1 to 200 characters or a number), data_too_large (more than 16 KB of input), instance_limit (200 instances on a canvas, or 50 under one parent), not_found, read_only (the person only views the canvas, or it is closed), invite_required (the person has only the link, and the declaration says access named, or it is a removal), open_timeout, open_failed, offline or rate_limit. |
 | `remove` | (type: string, key: string \| number) => Promise<void> | yes | Removes one of this component's own instances of a type, by its key, for someone the owner named (invite_required for anyone else), with everything it opened and its state, for everyone. For example when an email is deleted from the inbox's list. Rejects with the same reasons as open; not_found when it is not there. |
-| `send` | (type: string, payload: object) => Promise<message> | yes | Sends a message of a type the node declares in messages to the canvas's owner, whose own agent claims it, does the work with its own tools (sends the email, fetches the mail) and records the result: see useMessages and the messages skill. payload must fit the type's payload schema. Resolves with the message ({ id, type, status, ... }). Only someone the owner named may send. Rejects with an Error whose reason is send_unavailable (the node does not declare the type), invalid_payload (it does not fit the payload schema, or is over 64 KB), read_only (the person only views the canvas, or it is closed), invite_required (the person has only the link), not_found, message_settled, send_timeout, send_failed, offline or rate_limit. |
-| `approve` | (id: string) => Promise<message> | yes | Approves a message whose type needs approval: approval sender lets its sender approve it, approval owner the canvas's owner. An agent cannot claim it before. Put the button in the component, beside what will happen. |
-| `cancel` | (id: string) => Promise<message> | yes | Cancels a message before it is done: its sender or the canvas's owner. |
+| `send` | (type: string, payload: object) => Promise<message> | yes | Sends a request of a type the node declares in messages to the canvas's owner, in messaging, where the owner's own agent claims it, does the work with its own tools (sends the email, fetches the mail) and completes it with a result, which comes back to the component: see useMessages and the messages skill. payload must fit the type's payload schema. Resolves with the request ({ id, type, status, ... }). Only someone the owner named may send, signed in: not someone with only the link. Rejects with an Error whose reason is send_unavailable (the node does not declare the type), invalid_payload (it does not fit the payload schema, or is over 64 KB), read_only (the person only views the canvas, or it is closed), sign_in_required (nobody is signed in), invite_required (the person has only the link), not_found, message_settled, send_timeout, send_failed, offline, rate_limit (too many at once, or more requests in a minute than messaging takes: wait a minute) or request_limit (the canvas holds all the requests it can: the owner makes a new canvas). A send that fails as send_timeout, send_failed or offline is safe to repeat with the same type and payload while the page stays open: if the first reached the owner, the repeat gives back that request instead of a second one. |
+| `approve` | (id: string) => Promise<message> | yes | Approves a request whose type needs approval: approval sender lets its sender approve it, approval owner the canvas's owner (on their own page; the bar's Requests offers it to the owner too). An agent cannot claim it before. Put the button in the component, beside what will happen. |
+| `cancel` | (id: string) => Promise<message> | yes | Withdraws a request its sender sent, before it settles. |
 
 Example:
 
@@ -470,7 +472,7 @@ try {
 
 ### useMessages
 
-Call useMessages({ type }) to get { messages, send, pending, error, available } for a type the node declares in messages (BUILD-243): what this component sends to the canvas's owner's agent and what became of it. messages are the ones this node sent that this person may see (the canvas's managers see everyone's, anyone else their own), newest first, each { id, type, status, payload, result?, reason?, from: { name }, approval: { needs, approvedBy?, approvedAt? }, claim: { person, agent, until } or null, createdAt, updatedAt, expiresAt }, live as the agent claims and completes them. status is open, claimed, done, failed, expired or cancelled; show it with messageStatus(message). send(payload) sends one and resolves with it, or with undefined after setting error; it never rejects. Without type, messages are all of the node's. available is false when the node does not declare the type or this person may not send now (someone with only the link): render ToolUnavailable in its place.
+Call useMessages({ type }) to get { messages, send, pending, error, available } for a type the node declares in messages: the requests this component sends to the canvas's owner's agents, in messaging, and what became of them. messages are the ones this node sent that this person may see (their own, and for the canvas's owner other people's that wait for the owner's approval), newest first, each { id, type, status, payload, result?, invalidResult?, failure?, cancellation?, approval: { needs, approved }, claimed, mine, createdAt, updatedAt, expiresAt }, read again every few seconds while one is unsettled. status is open, claimed, done, failed, expired or cancelled; show it with messageStatus(message). result is the agent's result once done, when it fits the type's result schema (invalidResult says it did not); failure is why it failed; cancellation is why a cancelled one was (withdrawn by its sender, or canvas_deleted). send(payload) sends one and resolves with it, or with undefined after setting error; it never rejects. Without type, messages are all of the node's. available is false when the node does not declare the type or this person may not send now (not signed in, or someone with only the link): render ToolUnavailable in its place.
 
 | Argument | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -486,7 +488,7 @@ const last = messages[0];
 return <>
   <button disabled={!available || pending} onClick={() => send({ to, subject, body })}>Send</button>
   {last && <p>{messageStatus(last)}</p>}
-  {last?.status === "open" && last.approval.needs === "sender" && !last.approval.approvedAt && <button onClick={() => canvas.approve(last.id)}>Approve</button>}
+  {last?.status === "open" && last.approval.needs === "sender" && !last.approval.approved && <button onClick={() => canvas.approve(last.id)}>Approve</button>}
 </>;
 ```
 

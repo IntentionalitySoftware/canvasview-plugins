@@ -17,7 +17,7 @@ Before you write any nodes, answer three questions, in your head or with the per
   This becomes the `answerSchema`. If nothing comes back and people simply work on it
   together, make a canvas with no answer form (below).
 - **Who will use it?** One decider, a reviewer, a whole team at once. This decides the access
-  mode (see the work-with-people skill) and whether values live in shared state.
+  mode (see the work-with-people skill). Component interactions are shared. Mark personal drafts explicitly private.
 - **What do they need to see to answer well?** Only the evidence that changes the answer.
   Leave out everything else, and never send secrets or data the person should not see.
 
@@ -28,7 +28,7 @@ Then pick the shape:
 - **A canvas people keep working in**: leave out `answerSchema` (and `question` if the title says enough). People work
   over time (a board, a shared list, a live table); there is no answer panel, the canvas never
   becomes `answered`, and it stays open until you close it or it expires. Keep values in shared
-  state with `stateKey` and read them with `get_canvas_state`; refresh data with `patch_canvas`.
+  state automatically. Give a value a `stateKey` to read it by name with `get_canvas_state`; refresh data with `patch_canvas`.
   Blocks there need no `field`: there is no answer to draft into.
 - **Open decision**: an `answerSchema` with `stayOpen: true` accepts any number of answers.
 - **Your agent acts outside the canvas** (sends an email): message types on a component, in the messages skill.
@@ -120,7 +120,7 @@ The result has `id`, `url`, `version` and `unitsLeft` (included updates left).
 
 ## 5. Send the link
 
-Give the person the `url` with one sentence on what you need from them and by when, then follow the work-with-people skill to wait for the answer, a `canvas.answer` message (`wait_for_message`). A canvas shared by link is view only: when people who are not invited should answer, vote or comment, send `access.linkRole: "participant"`.
+Give the person the `url` with one sentence on what you need from them and by when, then follow the work-with-people skill to wait for the answer, a message with an `answer` typed part in your feed (`wait_for_message { canvases: [canvas], contents: ["answer"] }`). A link gives View only, signed in or not: only people invited by address (`access.invited`, participant or above) and members of the organization who have the canvas answer, vote, comment or send from it, signed in. Invite by address everyone else who should take part.
 
 ## Start from an example, and validate first
 

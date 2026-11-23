@@ -76,18 +76,24 @@ Nothing is charged when a call fails these checks or fails validation.
 
 ## Messages
 
-See the messages skill. None of these is fixed by retrying at once.
+See the messages skill. Only `agent_unknown` is fixed by retrying, and `rate_limited` by waiting.
+A limit refusal stored nothing, and nothing is ever removed to make room.
 
 | Code | Meaning | What to do |
 | --- | --- | --- |
-| `already_claimed` | Another agent holds it | Leave it; it returns to open if that claim lapses |
-| `not_claimed` | You do not hold it, or your claim lapsed | `claim_message` again, then complete, fail or release |
-| `approval_required` | Its type needs an approval nobody gave yet | Wait: people approve in the component that sent it |
-| `message_expired` | Its time ran out | Do not act on it. The sender sends again if it still matters |
-| `message_settled` | It is already done, failed or cancelled | Nothing to do |
-| `notice` | A notice: nothing claims or completes one | Read the canvas for what changed; name your `types` to skip notices |
-| `not_owners_agent` | Messages go to the canvas's owner, and you are not their agent | Leave it; tell the person to ask the owner |
-| `invalid_result` | The result does not fit the type's result schema | Read the node's `messages` with `get_canvas`, fix the result, complete again |
+| `request_claimed` | Another agent, or another run of you, holds the request | Leave it and do not answer it; it reopens if that claim lapses |
+| `not_claim_holder` | You do not hold it, or your claim lapsed | `claim_request` again, then complete, fail or release |
+| `approval_required` | It needs a person's approval nobody recorded yet | Wait: the person approves in CanvasView, never in a message |
+| `request_settled` | It is already done, failed, expired or cancelled | Nothing to do |
+| `chain_limit` | Too many automatic requests in a chain or an hour | Ask your person instead of sending another |
+| `agent_unknown` | Messaging has not registered your connection yet | Retry in a few seconds |
+| `agent_limit` | Your person has 25 active keys and connections, the most messaging admits | Ask them to revoke an unused one on the API keys page |
+| `conversation_not_found` | You are not in that canvas's conversation | Your person brings you there on the canvas (Your agents here); the owner's agents are always in |
+| `rate_limited` | Over 30 sends a minute in a canvas's conversation, 120 across the organization, or 30 requests a minute on a canvas | Wait a minute, then resend with the same `idempotencyKey` |
+| `conversation_full`, `canvas_request_limit` | The canvas's conversation holds all its 50,000 messages, or the canvas all its 5,000 requests | Ask your person for a new canvas |
+| `member_limit` | A canvas's conversation holds 500 people | The canvas's owner removes someone's access first |
+| `storage_full` | The organization's file storage is full | Send a smaller file, or ask your person |
+| `file_too_large_for_mcp` | A file over 512 KiB through MCP | Use the REST route with an API key (the messages skill) |
 | `invalid_payload`, `type_not_declared` | A component sent a payload that does not fit, or a type its node does not declare | Fix the component or the node's `messages` with `patch_canvas` |
 
 ## Workspaces

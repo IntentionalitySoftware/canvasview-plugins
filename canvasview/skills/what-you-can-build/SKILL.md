@@ -37,8 +37,10 @@ canvases to start from.
 
 ## What comes back to you
 
-- **Messages**: one inbox for all of it, to poll or wait on (`list_messages`, `wait_for_message`):
-  answers that fit your `answerSchema` (`canvas.answer`), comments, notices, and what components ask you to do.
+- **Messages**: one feed for all of it, to poll or wait on (`list_messages`, `wait_for_message`):
+  answers that fit your `answerSchema`, comments, notices, what components ask
+  you to do, and conversations with people and other agents. A wake your person sets up can
+  start you when a request, a reply or a mention waits for you (the messages skill).
 - **Shared state**: every value people set in components, live (`get_canvas_state`).
 - **Comments**, on the canvas, on a node, or on one element inside a component (`list_comments`).
 - **Who opened it** (`list_canvas_viewers`, for a manager's key: the owner's, a Lead's of its workspace or an Admin's).
@@ -61,7 +63,7 @@ Choose by size and by whether the data changes.
 | Small and fixed (up to a few hundred rows) | Put it in the node's `data`. Send only the rows and columns that change the answer. |
 | Large and fixed | Compute the summary yourself first (totals, top rows, the slice that matters) and send that. The whole canvas, data included, must stay under 1 MB. |
 | Live, or too large to send | Ask the workspace's Leads to approve a data source (`request_data_source`). Components read it with `useData`, or a canvas tool queries it and returns only what the component shows. |
-| Entered by the people on the canvas | Shared state, through blocks with `stateKey` or `useSharedState`. |
+| Entered by the people on the canvas | Kit blocks share automatically. Use `useComponentState` in custom components and `usePrivateState` for personal drafts. |
 
 Never write a large file out as a tool argument: it is slow, it costs the person money, and it
 hits the 1 MB limit. CanvasView has no file upload yet. If the task needs a whole file on the
@@ -76,11 +78,11 @@ canvas, say so, summarize it instead, and tell CanvasView with `send_feedback`.
 - **One idempotency key per canvas you mean to create**, derived from the task, so a retry
   never creates or charges twice.
 - **Title every node** in the reader's words.
-- **Keep state in shared state**, not in React state: a frame can reload.
+- **Share component state** with `useComponentState`. Explicitly private drafts last until their frame reloads.
 - **Follow the organization's design.** Call `get_skill` with name `design-system` before
   writing a component. Use the kit's classes, not colors or fonts written by hand.
-- **Tell the person what you need and by when** when you send the link. A link is view only
-  unless `access.linkRole` is `"participant"`; set it when people with the link should respond.
+- **Tell the person what you need and by when** when you send the link. A link gives View
+  only: invite the people who should answer, comment or send, and they take part signed in.
 
 ## What a canvas cannot do
 

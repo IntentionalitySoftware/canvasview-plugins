@@ -1,6 +1,6 @@
 {
   "name": "canvasview",
-  "version": "0.17.0",
+  "version": "0.22.0",
   "description": "Build shared canvases that people open by link, then read back their answers and shared state with CanvasView.",
   "author": {
     "name": "Intentionality Software",
@@ -38,5 +38,8 @@
     "logo": "./assets/icon.png"
   },
   "skills": "./skills/",
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.mcp.json",
+  "hooks": {
+    "hooks": {}
+  }
 }

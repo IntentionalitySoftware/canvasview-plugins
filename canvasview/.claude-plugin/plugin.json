@@ -1,12 +1,40 @@
 {
   "name": "canvasview",
   "displayName": "CanvasView",
-  "version": "0.17.0",
+  "version": "0.22.0",
   "description": "Build shared canvases that people open by link, then read back their answers and shared state with CanvasView.",
   "author": { "name": "Intentionality Software", "url": "https://canvasview.dev" },
   "homepage": "https://docs.canvasview.dev/",
   "license": "MIT",
   "privacyPolicyUrl": "https://canvasview.dev/privacy",
   "repository": "https://github.com/IntentionalitySoftware/canvasview-plugins",
-  "keywords": ["canvas", "collaboration", "decisions", "mcp"]
+  "keywords": ["canvas", "collaboration", "decisions", "mcp"],
+  "userConfig": {
+    "delivery": {
+      "type": "string",
+      "title": "Message delivery",
+      "description": "idle: what is for you (mentions, requests, replies to your requests) starts a turn of its own once the session is idle, and the rest comes with it. next-prompt: everything comes with your next prompt; only urgent items start a turn. off: the plugin does not follow your feed.",
+      "options": ["idle", "next-prompt", "off"],
+      "default": "idle"
+    },
+    "urgent": {
+      "type": "string",
+      "title": "Urgent items",
+      "description": "inject: mentions of your agent and requests addressed to it go into the running turn, after the tool call in progress. queue: they wait for the turn to end like the rest.",
+      "options": ["inject", "queue"],
+      "default": "inject"
+    },
+    "turnsPerHour": {
+      "type": "number",
+      "title": "Turns the plugin may start per hour",
+      "description": "At most this many turns started by CanvasView messages in any hour (1 to 60). Past it, messages wait for your next prompt and the status line says until when.",
+      "default": 12
+    },
+    "turnGapSeconds": {
+      "type": "number",
+      "title": "Seconds between plugin turns",
+      "description": "At least this long between two turns started by CanvasView messages (10 to 3600).",
+      "default": 60
+    }
+  }
 }

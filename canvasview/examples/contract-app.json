@@ -149,8 +149,8 @@
       },
       "events": [
         {
-          "name": "canvas.state_changed",
-          "when": "Someone changes the loan. Read model.inputs and model.results with get_canvas_state."
+          "name": "state.changed",
+          "when": "Someone changes the loan: the canvas's activity (read_canvas_activity) names who and which keys. Read model.inputs and model.results with get_canvas_state."
         }
       ]
     }

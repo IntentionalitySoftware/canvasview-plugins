@@ -38,21 +38,21 @@ A violation fails the create with `component_compile_failed` and a message such 
 | You need | Use |
 | --- | --- |
 | Input you computed | `data` (read-only in the component) |
-| Something everyone on the canvas sees and changes | `useSharedState(key, initial)` |
-| Something only this viewer is typing | React `useState` |
+| Component interactions, including filters, selection and expanded rows | `useComponentState(key, initial)` |
+| A named value shared across components | `useCanvasState(key, initial)` |
+| A private draft or personal feedback | `usePrivateState(initial)` |
 | Fill the answer panel | `useDraft()` |
 | Ask the person to confirm and send an answer now | `useSubmit()` |
 | Have the owner's agent act outside the canvas (send an email) | `useMessages()`, see the messages skill |
 | Assign someone on the team, show who is assigned, "use our organization" | `uses: ["members"]` on the node, `useMembers()`, `PersonPicker`, below |
 
-- `useSharedState` returns `[value, setValue, { error }]`. Values are JSON, synced live to
+- `useComponentState` returns `[value, setValue, { error }]`. Values are JSON, synced live to
   everyone and kept across reloads. Use an updater (`setValue((current) => ...)`) when the new
   value depends on the old one. Last write wins per key. If a write is rejected, it reverts
   and `error` holds the reason (for example `value_too_large` or `rate_limit`).
-- Keep anything the component must remember in shared state, not React state: a frame can
-  reload, for example when a tab in the components view is hidden and shown again.
-- Choose clear, namespaced keys (`ideas`, `budget-inputs`). Components using the same key share
-  the value, and you read the same keys with `get_canvas_state`.
+- Choose stable state keys and React list keys. Each component and opened instance keeps its own values. Kit tables share their filter, sort, page and selection automatically.
+- Use `<SchemaForm privateState />` for a personal answer. Use `usePrivateState` for custom private input.
+- Use controlled native inputs. Mark an intentionally uncontrolled personal input with `data-cv-private`. The compiler checks native controls and React's local state hooks: `useState`, `useReducer`, `useActionState` and `useOptimistic`. New source starts the component's built-in kit controls (sort, filter, selection) again.
 - `useDraft()` and `useSubmit()` may return nothing outside a canvas; call them as `draft?.(...)`.
   The drafted object's fields must be declared in the canvas `answerSchema`.
 - Prefer `draft` to `submit`. Drafting lets the person review the answer panel and send it.
@@ -82,12 +82,11 @@ buttons. Write class names in full: only names in the source are compiled. `styl
 First call `get_skill` with name `design-system`: if the organization chose a design, follow it.
 
 ```tsx
-import { useState } from "react";
-import { Note, useDraft, useSharedState } from "@canvasview/kit";
+import { Note, useDraft, useComponentState, usePrivateState } from "@canvasview/kit";
 
 export default function Shortlist({ data }: { data: { prompt: string } }) {
-  const [names, setNames, { error }] = useSharedState<string[]>("shortlist", []);
-  const [text, setText] = useState("");
+  const [names, setNames, { error }] = useComponentState<string[]>("shortlist", []);
+  const [text, setText] = usePrivateState("");
   const draft = useDraft();
   const button = "rounded-lg border border-border px-3 py-2 font-medium hover:bg-default";
   return (
@@ -119,7 +118,7 @@ return <>
 </>;
 ```
 
-A path is `/` or lowercase words with hyphens, with no parameters. The open page is each viewer's own. A person can open one page full window at `/c/<canvas>/<node>/<path>`.
+A path is `/` or lowercase words with hyphens, with no parameters. Following a RouteLink shares the open page with everyone viewing this component. Reloading or joining later restores the saved page. A person can open one page full window at `/c/<canvas>/<node>/<path>`.
 
 ## Sizing
 
@@ -144,6 +143,6 @@ Place it on a canvas of that workspace with `{ "kind": "component", "ref": "idea
 ## Common mistakes
 
 - Fetching data from a URL. Pass it in `data`, or use `useData` with a declared data source.
-- Keeping important state in `useState`, then losing it when the frame reloads.
+- Using private state for a choice that other viewers need to see.
 - Drafting fields that are not in `answerSchema`.
 - One big component for the whole canvas. Use building blocks around a small component.

@@ -98,6 +98,7 @@ makes the canvas writes the component from your brief.
 | `repeat` | `{ min, max, key }`: one node per item. `key` names the field that identifies an item. |
 | `optional` | The block may be left out. |
 | `tracks` | Another block. This block receives its items as `data.items`, each with `nodeId`. |
+| `stateMode` | A widget block's controls are shared. Set `"private"` for each person's own answers, such as a personal form. |
 | `title`, `titleField` | The tab's name, fixed or read from a content field. |
 | `height` | Room to reserve before the page measures the block. |
 | `messages`, `opens`, `routes`, `packages`, `uses` | As on a component node. |

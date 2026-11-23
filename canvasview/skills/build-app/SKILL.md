@@ -12,7 +12,7 @@ has your agent send an email or post outside the canvas, see the messages skill.
 ## Several components, one contract
 
 When several components work together through shared state, write the contract first, so the
-parts cannot drift. The canvas enforces it. Work in this order:
+parts cannot drift. Use `useComponentState` for component filters and selections, `useCanvasState` between components, and `usePrivateState` for personal drafts.
 
 1. **Write the contract** in the spec's `contract`: `state` maps each key (or a prefix such as
    `inputs.*` or `votes:*`) to `{ schema, writers }`, where `schema` uses the flat parameter
@@ -84,7 +84,7 @@ by the parent and all under it; `useCanvasState` is canvas-wide, as the parent's
 reads each email's with `useOpenedState("email", "draft")`. Removing an instance erases its keys; a contract declares them in `scopes`.
 
 What people open is live state: no version, no charge. `get_canvas` lists `instances` with their data and
-`nodeStatus`; `wait_for_message` wakes on `canvas.instance_changed`. `change_instances` opens, closes, removes, renames
+`nodeStatus`; your feed hears of it as `canvas.instance_changed`. `change_instances` opens, closes, removes, renames
 and colors instances and nodes: a color (`#rrggbb`, set there once the canvas exists, never in the spec) is a
 soft shadow whose meaning is yours to say, such as who an item is for. `remove_node` takes its instances and state.
 A canvas holds 200 instances, a parent 50, each input up to 16 KB. See [inbox.json](../../examples/inbox.json), which lists the reader to save first.
