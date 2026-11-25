@@ -2,7 +2,7 @@
 
 # CanvasView error codes
 
-Plugin version 0.22.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
+Plugin version 0.23.0. A failed tool call returns `isError: true` with JSON text `{ error, message }`. HTTP status is what the REST API returns for the same error. Payment errors (402) also carry `reason`.
 
 | Code | HTTP | Message |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Plugin version 0.22.0. A failed tool call returns `isError: true` with JSON text
 | `attachment_not_found` | 404 | Use an attachment ID from reserve_attachment, or from a message you can read. / This canvas's conversation has no such attachment. |
 | `attachment_too_large` | 413 | An attachment is at most 25 MiB. |
 | `attachments_unavailable` | 503 | Attachments are not available. Retry later. |
-| `canvas_closed` | 409 | This canvas no longer takes comments. / This canvas was deleted: its conversation is readable and takes no new message. / This canvas no longer accepts changes. / This canvas is read-only. Only active canvases can write to a data source. / This canvas expires within a minute, so it sends no more requests. Extend it first. / This canvas no longer accepts requests. |
+| `canvas_closed` | 409 | This canvas no longer takes comments. / This canvas is closed, has expired or was deleted, so it takes no new message, request or attachment. An expired canvas takes them again once it is extended (extend_canvas) or kept (pin_canvas); a closed canvas is not reopened, and a deleted one is gone. The message says which it is. / This canvas no longer accepts changes. / This canvas is read-only. Only active canvases can write to a data source. / This canvas expires within a minute, so it sends no more requests. Extend it first. / This canvas no longer accepts requests. |
 | `canvas_kept` | 409 | This canvas is kept permanently and has no expiry. Unpin it first. |
 | `canvas_limit` | 409 | This account has … active canvases, the most allowed. Delete some with delete_canvas or let them expire before creating another. |
 | `canvas_locked` | 409 | … is editing this canvas. Try again in … seconds, or once they finish. |
@@ -45,6 +45,7 @@ Plugin version 0.22.0. A failed tool call returns `isError: true` with JSON text
 | `component_not_found` | 404, 400 | No saved component is named …. Use search_components to find one. / No saved component matches …. Use search_components to find one, or send source. / …: supply source, or ref naming a saved component. |
 | `components_required` | 400 | Send the compiled component for every component node. / Send the compiled component for every declaration in opens that carries source. / Send the compiled component for each component node this patch adds or changes. / Send the compiled component for each declaration in opens this patch adds or changes. |
 | `connection_revoked` | 403 | This MCP client was disconnected in CanvasView. |
+| `connection_unavailable` | 400 | Connection … uses …. Approve that source in this canvas's workspace and declare it in the canvas's dataSources before uploading the tool. |
 | `conversation_full` | 409 | This canvas's conversation holds as many messages as it can (…), and nothing is removed to make room. It stays readable: ask your person for a new canvas. |
 | `conversation_not_found` | 404 | Use a canvas whose conversation you are in: your person is on the canvas and brought you there (Your agents here, on the canvas), or you are the canvas owner's agent. |
 | `credential_revoked` | 403 | This key or connection was revoked or disconnected in CanvasView. Ask your person to connect you again. |
@@ -69,7 +70,8 @@ Plugin version 0.22.0. A failed tool call returns `isError: true` with JSON text
 | `email_required` | 400 | Add a primary email address to your account. |
 | `example_not_found` | 404 | No example is named …. Use one of …. |
 | `file_too_large_for_mcp` | 413 | Over MCP a file is at most … KiB. Use the REST route with an API key for larger files. / Over MCP a file is at most … KiB. Use PUT or GET /api/attachments/:id with an API key for larger files, up to 25 MiB. |
-| `forbidden` | 403 | Only Admins see every workspace at once. / Only managers of this canvas (its owner, its workspace's Leads and Admins) can see who opened it. / This is for members of the organization. / Only a signed-in Lead of the canvas's workspace can change its owner. / Sign in to CanvasView to see the Canvases page. / Only a signed-in Admin can import a brand. / Only a signed-in Admin can invite people. / Only an API key or a connected agent asks who it is. / Only an API key or a connected agent uses messaging tools. / Sign in to CanvasView to manage billing. / People set the name they are shown by themselves. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Lead of this workspace can manage data sources. / Only an agent asks for a data source. A Lead creates one in settings. / Only Leads of this workspace can do this. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / People take part on a canvas; agents use the messaging tools. / You can view this canvas, but not take part in it. / This is for agents. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. |
+| `forbidden` | 403 | Only Admins see every workspace at once. / Only managers of this canvas (its owner, its workspace's Leads and Admins) can see who opened it. / This is for members of the organization. / Only a signed-in Lead of the canvas's workspace can change its owner. / Sign in to CanvasView to see the Canvases page. / Only a signed-in Admin can import a brand. / Only an API key or a connected agent uses the feed hook. / Only a signed-in Admin can invite people. / Only an API key or a connected agent uses messaging tools. / Only an API key or a connected agent asks who it is. / Sign in to CanvasView to manage billing. / People set the name they are shown by themselves. / Agents can list notifications. Sign in to CanvasView to mark them read or dismiss them. / This is not available to you. / Only Admins can do this. / Only the person who created this organization can do this. / Only a signed-in Lead of this workspace can manage data sources. / Only an agent asks for a data source. A Lead creates one in settings. / Only Leads of this workspace can do this. / Only editors of this canvas can do this. / Data requests come from the people a canvas is shared with. / A live connection is for a person's page. / People take part on a canvas; agents use the messaging tools. / You can view this canvas, but not take part in it. / This is for agents. / Reports come from the people a canvas is shared with. / This is for people and agents with a role on the canvas. |
+| `function_tool_invalid` | 400 |  |
 | `grant_recovery_required` | 409 | Review Stripe before retrying grant issuance. |
 | `hold_not_found` | 404 | This operation has no open hold. It may have settled already. |
 | `hold_too_recent` | 409 | Wait until the hold is five minutes old. Its request may still finish. |
@@ -142,7 +144,7 @@ Plugin version 0.22.0. A failed tool call returns `isError: true` with JSON text
 | `organization_required` | 403 | Choose an organization to continue. / Join or create an organization in CanvasView to take part in this canvas. |
 | `package_build_failed` | 400 | The package could not be bundled for the sandbox. Use another version or another package. |
 | `package_build_timeout` | 503 | Bundling took longer than 25 seconds. Retry; later builds reuse the first. |
-| `package_build_unavailable` | 503 | The package builder could not be reached or failed. Retry in a minute. |
+| `package_build_unavailable` | 503 | Prepared package … is unavailable. Retry preparation. / The package builder could not be reached or failed. Retry in a minute. |
 | `package_bundle_too_large` | 400 | A component's packages bundle to more than 3 MB. Import smaller entry points or drop a package. |
 | `package_check_unavailable` | 503 | The npm registry or OSV could not be reached to check a version not checked before. Retry in a minute. |
 | `package_denied` | 400 | CanvasView blocks this package. Remove it. |
@@ -155,13 +157,14 @@ Plugin version 0.22.0. A failed tool call returns `isError: true` with JSON text
 | `package_request_too_large` | 400 | The packages in one request pull in more than 16 MB of code together. Send components that use packages in separate requests, or import smaller entry points. |
 | `package_too_large` | 400 | The package pulls in more than 5 MB of code. Import a smaller entry point or use a smaller package. |
 | `package_too_recent` | 400 | The version was published less than 3 days ago. Use an older version; the message suggests one. |
+| `packages_unavailable` | 503 | The canvas's organization is unavailable. |
 | `parent_not_found` | 404 | Name a node of this canvas, or an instance on it, as the parent. |
 | `payload_too_large` | 413 | Reduce canvas data below 1 MB. This canvas is … MB; send fewer rows or shorter text. / Keep the recipe below 1 MB. / Reduce the recipe's example canvas below 1 MB. / Keep a payload within … KB. / Keep a tool's input within 64 KB. / Reduce the request size. |
 | `payment_disputed` | 402 | A payment on this account is under dispute. Contact support@canvasview.dev. |
 | `payment_recovery_required` | 409 | Review the Stripe payment before retrying grant issuance. |
 | `pin_limit` | 409 | This account already keeps … canvases, the most allowed. Unpin one before keeping another. |
 | `prompt_too_long` | 400 | Keep a prompt within … characters. This one has …. |
-| `rate_limit` | 429 | Wait a minute before importing again. / Wait one second before retrying. / Too many data requests. Wait a minute before retrying. / Wait a minute: one person makes at most … of these changes a minute. / Too many at once. Try again in a moment. / A canvas tests tools at most … times a minute. Wait a moment. / A tool writes shared state at most … times a second. |
+| `rate_limit` | 429 | Wait a minute before importing again. / Wait one second before retrying. / Too many data requests. Wait a minute before retrying. / Wait a minute: one person makes at most … of these changes a minute. / Too many at once. Try again in a moment. / A canvas tests tools at most … times a minute. Wait a moment. / Wait a moment before preparing another tool. / A tool writes shared state at most … times a second. |
 | `rate_limited` | 429 | You sent too much too fast: … messages and requests a minute in one conversation, … a minute across the organization, or … requests a minute on one canvas. Nothing was stored: wait a minute, then send again with the same idempotencyKey. |
 | `read_only` | 409 | This canvas is read-only to you: you view it, or it no longer takes changes. / This canvas is read-only. Only active canvases accept state changes. |
 | `repository_moved` | 409 | The repository changed while this was being prepared. Try again. |

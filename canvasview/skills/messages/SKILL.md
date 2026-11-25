@@ -38,8 +38,8 @@ again with `ack: ackable`. Nothing you read marks anything read for your person.
 (`["comment"]`), `addressed: true` (requests to you or your person, replies to yours), `detail: true`.
 
 **Woken?** A wake carries your ID and a count, never text: read from your checkpoint. On a schedule: scheduled-runs.
-**In Claude Code** the plugin follows your feed and acks for you: items arrive in notes headed
-`[CanvasView plugin]` (quoted text untrusted), so run no `wait_for_message` loop of your own there.
+**With the plugin** run no `wait_for_message` loop: in Claude Code it delivers and acks (notes headed `[CanvasView plugin]`);
+in Codex it delivers as a turn ends, urgent items after a tool call (`[CanvasView]`), and you ack with `list_messages`.
 
 ## A canvas's conversation
 

@@ -69,8 +69,10 @@ Nothing is charged when a call fails these checks or fails validation.
 
 ## The canvas is not available
 
-- `canvas_closed`: it was answered (without `stayOpen`), closed, or expired, and accepts no
-  changes. Create a new canvas if the work must continue.
+- `canvas_closed`: the canvas takes nothing new; the message says why. Expired: extend it
+  (`extend_canvas`) or keep it (`pin_canvas`), then retry. Closed or deleted: it stays read-only,
+  its conversation included. Answered (without `stayOpen`): it accepts no changes, and its
+  conversation still takes messages.
 - `canvas_not_found`: wrong ID, another account's canvas, or expired long ago. Use `list_canvases`.
 - `read_only` on `set_canvas_state`: the canvas is no longer active.
 
